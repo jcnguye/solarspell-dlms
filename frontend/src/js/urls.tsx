@@ -55,6 +55,7 @@ const APP_URLS = {
     CONTENT_BULK_DOWNLOAD: (filters?: content_filters) =>
         url_with_params(`${api_path}/contents/get_spreadsheet/`, get_filters_arr(undefined, undefined, filters)),
     CONTENT_FOLDER: url_with_params("media/contents/"),
+    CSRF_TOKEN: url_with_params(`${api_path}/get_csrf/`),
     MODULE_FOLDER: url_with_params("media/modules/"),
     DISK_INFO: url_with_params(`${api_path}/disk_info/`),
     LIBRARY_ASSETS: url_with_params(`${api_path}/lib_layout_images/`),

@@ -18,6 +18,7 @@ from django.db.models import Q
 from django.db import IntegrityError
 
 from django.http import HttpResponse
+from django.contrib.admin.views.decorators import staff_member_required
 
 import csv
 from rest_framework.generics import get_object_or_404
@@ -26,7 +27,22 @@ import xlsxwriter
 import io
 import datetime
 
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
+from rest_framework.permissions import BasePermission
+from rest_framework.authentication import SessionAuthentication, BasicAuthentication
+
+from django.middleware.csrf import get_token
+
+#Checks if user is Admin
+class IsAdminUser(BasePermission):
+    def has_permission(self, request, view):
+        return request.user and request.user.is_staff
+
 class StandardDataView:
+    permission_classes = (IsAdminUser,)
+
     def create(self, request, *args, **kwargs):
         try:
             serializer = self.get_serializer(data=request.data)
@@ -509,6 +525,8 @@ class LibraryBuildView(views.APIView):
         response = build_response(result)
         return response
 
+@api_view(('GET',))
+@staff_member_required
 def metadata_sheet(request, metadata_type):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="{}.csv"'.format(metadata_type)
@@ -521,7 +539,9 @@ def metadata_sheet(request, metadata_type):
     
     return response
 
+
 @api_view(('GET',))
+@staff_member_required
 @renderer_classes((JSONRenderer,))
 def disk_info(request):
     import shutil
@@ -531,3 +551,9 @@ def disk_info(request):
         "used": used,
         "free": free
     })
+
+@api_view(('GET',))
+@staff_member_required
+@renderer_classes((JSONRenderer,))
+def get_csrf(request):
+    return build_response(get_token(request))

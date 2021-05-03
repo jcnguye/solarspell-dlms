@@ -44,7 +44,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'content_management',
-    'frontend'
+    'frontend',
+    'django_extensions'
 ]
 
 MIDDLEWARE = [
@@ -62,8 +63,7 @@ ROOT_URLCONF = 'dlms.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates')]
-        ,
+        'DIRS': [env.str('STATIC_ROOT')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

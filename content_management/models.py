@@ -47,7 +47,7 @@ class Content(models.Model):
         validators=[
             validate_unique_filename,
             validate_unique_file
-        ])
+            ])
     filesize = models.FloatField(null=True, editable=True)
     file_name = models.CharField(max_length=500, null=True)
     title = models.CharField(max_length=300)

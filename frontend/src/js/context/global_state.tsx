@@ -189,6 +189,9 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
     }
 
     componentDidMount() {
+        Axios.get(APP_URLS.CSRF_TOKEN).then(res => {
+            Axios.defaults.headers.common["X-CSRFToken"] = res.data.data
+        })
         this.refresh_metadata().then(this.load_content_rows)
         this.refresh_assets()
         this.refresh_library_versions()
@@ -405,7 +408,6 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             update_func(draft.contents_api.search)
         })
             .then(() => this.set_contents_page(0))
-            .then(this.load_content_rows)
     }
 
     async set_contents_page(page: number) {
@@ -449,7 +451,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             //Add metadata_name to show_columns if it doesn't already exist
             //Parse cookies to see if the column should show up from cookies
             const in_cookies = (if_exists => {
-                const value =  if_exists?.split("=")[1]
+                const value = if_exists?.split("=")[1]
                 return value?.split(",")?.reduce((set, title) => {
                     set.add(title)
                     return set
