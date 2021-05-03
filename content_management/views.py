@@ -15,6 +15,7 @@ from content_management.standardize_format import build_response
 from content_management.paginators import PageNumberSizePagination
 
 from django.db.models import Q
+from django.db import IntegrityError
 
 from django.http import HttpResponse
 
@@ -26,6 +27,16 @@ import io
 import datetime
 
 class StandardDataView:
+    def create(self, request, *args, **kwargs):
+        try:
+            serializer = self.get_serializer(data=request.data)
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            headers = self.get_success_headers(serializer.data)
+            return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers) 
+        except IntegrityError as e:
+            return build_response(status=status.HTTP_400_BAD_REQUEST, success=False, error="Already Exists in Database")
+
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()

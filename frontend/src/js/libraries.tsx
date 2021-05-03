@@ -32,6 +32,7 @@ import { Autocomplete, createFilterOptions } from '@material-ui/lab';
 import { format } from 'date-fns';
 import KebabMenu from './reusable/kebab_menu';
 import { CustomPaging, PagingState } from '@devexpress/dx-react-grid';
+import { get_string_from_error } from "./utils";
 
 interface LibrariesProps {
     users_api: UsersAPI
@@ -677,7 +678,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                     ), (
                         <Button
                             key={1}
-                            onClick={async () => {
+                            onClick={() => {
                                 this.update_state(draft => {
                                     draft.modals.add_version.name.reason = VALIDATORS.VERSION_NAME(draft.modals.add_version.name.value)
                                     draft.modals.add_version.number.reason = VALIDATORS.VERSION_NUMBER(draft.modals.add_version.number.value)
@@ -788,6 +789,9 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                         this.state.modals.edit_version.name.value || undefined,
                                         this.state.modals.edit_version.number.value || undefined,
                                         this.state.modals.edit_version.created_by.id !== 0 ? this.state.modals.edit_version.created_by : undefined
+                                    ).then(
+                                        () => this.props.show_toast_message("Edited Successfully", true),
+                                        err => this.props.show_toast_message(get_string_from_error(err.response.data.error, "Failed to edit version"), false),
                                     )
                                 }).then(this.close_modals)
                             }}

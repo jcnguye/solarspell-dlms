@@ -156,9 +156,7 @@ class LibraryVersion(models.Model):
 @receiver(models.signals.post_save, sender=LibraryVersion)
 def on_version_save(sender, instance, created, **kwargs):
     # adds initial metadata_types
-    print("Saved")
     if created:
-        print("created")
         for metadata_type in MetadataType.objects.all():
             instance.metadata_types.add(metadata_type)
 

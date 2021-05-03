@@ -316,28 +316,28 @@ export default class Metadata extends Component<MetadataProps, MetadataState> {
                     title={"Create New Metadata Type"}
                     open={this.state.modals.create_type.is_open}
                     on_close={this.close_modals}
-                    get_actions={focus_ref => [(
-                        <Button
-                            key={0}
-                            onClick={this.close_modals}
-                            color="secondary"
-                        >
-                            Cancel
-                        </Button>
-                    ), (
-                        <Button
-                            key={1}
-                            onClick={()=> {
-                                this.props.metadata_api.add_metadata_type(this.state.modals.create_type.type_name)
-                                this.close_modals()
-                            }}
-                            color="primary"
-                            ref={focus_ref}
-                        >
-                            Create
-                        </Button>
-                    )]}
-                >
+                    get_actions={ref => [<>
+                                <Button
+                                    key={0}
+                                    onClick={this.close_modals}
+                                    color="secondary"
+                                    ref={ref}
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    key={1}
+                                    onClick={()=> {
+                                        this.props.metadata_api.add_metadata_type(this.state.modals.create_type.type_name)
+                                        this.close_modals()
+                                    }}
+                                    color="primary"
+                                >
+                                    Create
+                                </Button>
+                            </>]
+                        }
+               >
                     <TextField
                         fullWidth
                         label={"Metadata Type"}
