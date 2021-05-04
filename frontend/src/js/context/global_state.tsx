@@ -35,7 +35,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             copyright_notes: "",
             file_size_from: null,
             file_size_to: null,
-            file_name: "",
+            filename: "",
             metadata: {},
             reviewed_from: null,
             reviewed_to: null,
@@ -106,21 +106,24 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                 library_modules: []
             },
             utils_api: {
+                outstanding_requests: new Set(),
                 disk_total: 0,
                 disk_used: 0,
                 disk_free: 0
             }
         }
 
+        this.handle_loader = this.handle_loader.bind(this)
+        
         //ContentsAPI
-        this.delete_content = this.delete_content.bind(this)
-        this.load_content_rows = this.load_content_rows.bind(this)
-        this.add_content = this.add_content.bind(this)
-        this.edit_content = this.edit_content.bind(this)
+        this.delete_content = this.handle_loader(this.delete_content.bind(this))
+        this.load_content_rows = this.handle_loader(this.load_content_rows.bind(this))
+        this.add_content = this.handle_loader(this.add_content.bind(this))
+        this.edit_content = this.handle_loader(this.edit_content.bind(this))
         this.update_search_state = this.update_search_state.bind(this)
         this.set_selection = this.set_selection.bind(this)
         this.reset_search = this.reset_search.bind(this)
-        this.add_selected_to_folder = this.add_selected_to_folder.bind(this)
+        this.add_selected_to_folder = this.handle_loader(this.add_selected_to_folder.bind(this))
         this.set_contents_page = this.set_contents_page.bind(this)
         this.set_contents_page_size = this.set_contents_page_size.bind(this)
         this.set_sorting = this.set_sorting.bind(this)
@@ -128,64 +131,89 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         this.delete_selection = this.delete_selection.bind(this)
 
         //MetadataAPI
-        this.refresh_metadata = this.refresh_metadata.bind(this)
-        this.add_metadata_type = this.add_metadata_type.bind(this)
-        this.edit_metadata_type = this.edit_metadata_type.bind(this)
-        this.delete_metadata_type = this.delete_metadata_type.bind(this)
-        this.add_metadata = this.add_metadata.bind(this)
-        this.edit_metadata = this.edit_metadata.bind(this)
-        this.delete_metadata = this.delete_metadata.bind(this)
+        this.refresh_metadata = this.handle_loader(this.refresh_metadata.bind(this))
+        this.add_metadata_type = this.handle_loader(this.add_metadata_type.bind(this))
+        this.edit_metadata_type = this.handle_loader(this.edit_metadata_type.bind(this))
+        this.delete_metadata_type = this.handle_loader(this.delete_metadata_type.bind(this))
+        this.add_metadata = this.handle_loader(this.add_metadata.bind(this))
+        this.edit_metadata = this.handle_loader(this.edit_metadata.bind(this))
+        this.delete_metadata = this.handle_loader(this.delete_metadata.bind(this))
         this.set_view_metadata_column = this.set_view_metadata_column.bind(this)
 
         //Library Assets API
-        this.add_library_asset = this.add_library_asset.bind(this)
-        this.edit_library_asset = this.edit_library_asset.bind(this)
-        this.delete_library_asset = this.delete_library_asset.bind(this)
-        this.refresh_assets = this.refresh_assets.bind(this)
+        this.add_library_asset = this.handle_loader(this.add_library_asset.bind(this))
+        this.edit_library_asset = this.handle_loader(this.edit_library_asset.bind(this))
+        this.delete_library_asset = this.handle_loader(this.delete_library_asset.bind(this))
+        this.refresh_assets = this.handle_loader(this.refresh_assets.bind(this))
 
         //Library Versions API
-        this._update_current_directory = this._update_current_directory.bind(this)
-        this.refresh_current_directory = this.refresh_current_directory.bind(this)
-        this.refresh_library_versions = this.refresh_library_versions.bind(this)
-        this.enter_version_root = this.enter_version_root.bind(this)
-        this.enter_folder = this.enter_folder.bind(this)
-        this.enter_parent = this.enter_parent.bind(this)
-        this.add_version = this.add_version.bind(this)
-        this.set_version_image = this.set_version_image.bind(this)
-        this.update_version = this.update_version.bind(this)
-        this.create_child_folder = this.create_child_folder.bind(this)
-        this.delete_folder = this.delete_folder.bind(this)
-        this.rename_folder = this.rename_folder.bind(this)
-        this.set_folder_banner = this.set_folder_banner.bind(this)
-        this.set_folder_logo = this.set_folder_logo.bind(this)
-        this.clone_version = this.clone_version.bind(this)
-        this.remove_content_from_folder = this.remove_content_from_folder.bind(this)
-        this.refresh_folders_in_current_version = this.refresh_folders_in_current_version.bind(this)
-        this.add_content_to_folder = this.add_content_to_folder.bind(this)
-        this.add_module_to_version = this.add_module_to_version.bind(this)
-        this.remove_module_from_version = this.remove_module_from_version.bind(this)
-        this.refresh_modules_in_current_version = this.refresh_modules_in_current_version.bind(this)
-        this.set_versions_page = this.set_versions_page.bind(this)
-        this.set_versions_page_size = this.set_versions_page_size.bind(this)
-        this.add_metadata_type_to_version = this.add_metadata_type_to_version.bind(this)
-        this.remove_metadata_type_to_version = this.remove_metadata_type_to_version.bind(this)
-        this.reset_to_library_defaults = this.reset_to_library_defaults.bind(this)
+        this._update_current_directory = this.handle_loader(this._update_current_directory.bind(this))
+        this.refresh_current_directory = this.handle_loader(this.refresh_current_directory.bind(this))
+        this.refresh_library_versions = this.handle_loader(this.refresh_library_versions.bind(this))
+        this.enter_version_root = this.handle_loader(this.enter_version_root.bind(this))
+        this.enter_folder = this.handle_loader(this.enter_folder.bind(this))
+        this.enter_parent = this.handle_loader(this.enter_parent.bind(this))
+        this.add_version = this.handle_loader(this.add_version.bind(this))
+        this.set_version_image = this.handle_loader(this.set_version_image.bind(this))
+        this.update_version = this.handle_loader(this.update_version.bind(this))
+        this.create_child_folder = this.handle_loader(this.create_child_folder.bind(this))
+        this.delete_folder = this.handle_loader(this.delete_folder.bind(this))
+        this.rename_folder = this.handle_loader(this.rename_folder.bind(this))
+        this.set_folder_banner = this.handle_loader(this.set_folder_banner.bind(this))
+        this.set_folder_logo = this.handle_loader(this.set_folder_logo.bind(this))
+        this.clone_version = this.handle_loader(this.clone_version.bind(this))
+        this.remove_content_from_folder = this.handle_loader(this.remove_content_from_folder.bind(this))
+        this.refresh_folders_in_current_version = this.handle_loader(this.refresh_folders_in_current_version.bind(this))
+        this.add_content_to_folder = this.handle_loader(this.add_content_to_folder.bind(this))
+        this.add_module_to_version = this.handle_loader(this.add_module_to_version.bind(this))
+        this.remove_module_from_version = this.handle_loader(this.remove_module_from_version.bind(this))
+        this.refresh_modules_in_current_version = this.handle_loader(this.refresh_modules_in_current_version.bind(this))
+        this.set_versions_page = this.handle_loader(this.set_versions_page.bind(this))
+        this.set_versions_page_size = this.handle_loader(this.set_versions_page_size.bind(this))
+        this.add_metadata_type_to_version = this.handle_loader(this.add_metadata_type_to_version.bind(this))
+        this.remove_metadata_type_to_version = this.handle_loader(this.remove_metadata_type_to_version.bind(this))
+        this.reset_to_library_defaults = this.handle_loader(this.reset_to_library_defaults.bind(this))
         
         //Users API
-        this.refresh_users = this.refresh_users.bind(this)
-        this.add_user = this.add_user.bind(this)
+        this.refresh_users = this.handle_loader(this.refresh_users.bind(this))
+        this.add_user = this.handle_loader(this.add_user.bind(this))
 
         //Library Modules API
-        this.refresh_library_modules = this.refresh_library_modules.bind(this)
-        this.set_module_logo = this.set_module_logo.bind(this)
-        this.add_module = this.add_module.bind(this)
-        this.edit_module = this.edit_module.bind(this)
+        this.refresh_library_modules = this.handle_loader(this.refresh_library_modules.bind(this))
+        this.set_module_logo = this.handle_loader(this.set_module_logo.bind(this))
+        this.add_module = this.handle_loader(this.add_module.bind(this))
+        this.edit_module = this.handle_loader(this.edit_module.bind(this))
 
         //Utils API
-        this.get_disk_info = this.get_disk_info.bind(this)
+        this.get_disk_info = this.handle_loader(this.get_disk_info.bind(this))
 
         this.update_state = update_state.bind(this)
         this.get_content_filters = this.get_content_filters.bind(this)
+    }
+
+    //Loader Decorator
+    handle_loader<T>(func: (...args: any[]) => Promise<T>): (...args: any[]) => Promise<T> {
+        return async (...args) => {
+            const key = {}
+            await this.update_state(draft => {
+                draft.utils_api.outstanding_requests.add(key)
+            })
+            try {
+                var result: T = await func(...args)
+                console.log(result)
+            } catch(e) {
+                await this.update_state(draft => {
+                    draft.utils_api.outstanding_requests.delete(key)
+                })
+                console.log("Throwing E")
+                console.error(e)
+                throw e
+            }
+            await this.update_state(draft => {
+                draft.utils_api.outstanding_requests.delete(key)
+            })
+            return result
+        }
     }
 
     componentDidMount() {
@@ -265,7 +293,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                 return prev.concat(search.metadata[current].map(metadata => metadata.id))
             }, [] as number[]),
             active: active_filter,
-            file_name: search.file_name,
+            filename: search.filename,
             duplicatable: {"all": undefined, "yes": true, "no": false}[search.duplicatable],
             sort: this.state.contents_api.sorting.length > 0 ? `${this.state.contents_api.sorting[0].columnName},${this.state.contents_api.sorting[0].direction}` : undefined
         }
@@ -973,7 +1001,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                     set_page_size: this.set_contents_page_size,
                     set_sorting: this.set_sorting,
                     bulk_download: this.bulk_download,
-                    delete_selection: this.delete_selection
+                    delete_selection: this.delete_selection,
                 },
                 lib_assets_api: {
                     state: this.state.library_assets_api,

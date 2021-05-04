@@ -147,6 +147,7 @@ type UtilsState = {
     disk_used: number
     disk_free: number
     disk_total: number
+    outstanding_requests: Set<{}>
 }
 
 type LibraryModulesAPI = {

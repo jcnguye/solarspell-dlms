@@ -258,7 +258,8 @@ class MainScreen extends React.Component<MainScreenProps, MainScreenState> {
                     right = "50%"
                     zIndex = "10001"
                 >
-                {this.state.loader_state.loading && <CircularProgress color="primary"/>}
+                    {(this.state.loader_state.loading || this.props.apis.utils_api.state.outstanding_requests.size > 0)
+                        && <CircularProgress color="primary"/>}
                 </Box>
             </React.Fragment>
         )

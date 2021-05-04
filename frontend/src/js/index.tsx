@@ -6,10 +6,11 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import MainScreen from './main';
 import { MuiPickersUtilsProvider } from '@material-ui/pickers';
 import DateFnsUtils from '@date-io/date-fns';
-import { setAutoFreeze } from 'immer';
+import { setAutoFreeze, enableMapSet } from 'immer';
 import GlobalState from './context/global_state';
 
 setAutoFreeze(false)
+enableMapSet()
 
 /*
 * Load main screen
