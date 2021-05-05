@@ -43,12 +43,14 @@ interface ContentModals {
     }
     delete_content: {
         is_open: boolean
-        row: SerializedContent
     }
     bulk_add: {
         is_open: boolean
     }
     column_select: {
+        is_open: boolean
+    }
+    bulk_download: {
         is_open: boolean
     }
 }
@@ -98,12 +100,14 @@ export default class Content extends Component<ContentProps, ContentState> {
             },
             delete_content: {
                 is_open: false,
-                row: this.content_defaults
             },
             bulk_add: {
                 is_open: false,
             },
             column_select: {
+                is_open: false,
+            },
+            bulk_download: {
                 is_open: false,
             }
         }
@@ -151,7 +155,9 @@ export default class Content extends Component<ContentProps, ContentState> {
                 >New Content
                 </Button>
                 <Button
-                    onClick={this.props.contents_api.delete_selection}
+                    onClick={_ => this.update_state(draft => {
+                        draft.modals.delete_content.is_open = true
+                    })}
                     style={{
                         marginLeft: "1em",
                         marginBottom: "1em",
@@ -206,12 +212,6 @@ export default class Content extends Component<ContentProps, ContentState> {
                 <ContentSearch
                     contents_api={contents_api}
                     metadata_api={metadata_api}
-                    on_delete={row => {
-                        this.update_state(draft => {
-                            draft.modals.delete_content.is_open = true
-                            draft.modals.delete_content.row = row
-                        })
-                    }}
                     on_edit={row => {
                         this.update_state(draft => {
                             draft.modals.edit.is_open = true
@@ -238,13 +238,13 @@ export default class Content extends Component<ContentProps, ContentState> {
                     }}
                 />
                 <ActionDialog
-                    title={`Delete Content item ${this.state.modals.delete_content.row.title}?`}
+                    title={`Delete ${this.props.contents_api.state.selection.length} Content Item(s)?`}
                     open={this.state.modals.delete_content.is_open}
-                    get_actions={focus_ref => [(
+                    get_actions={(focus_ref: any) => [(
                         <Button
                             key={1}
                             onClick={()=> {
-                                this.props.contents_api.delete_content(this.state.modals.delete_content.row)
+                                this.props.contents_api.delete_selection()
                                 this.close_modals()
                             }}
                             color="secondary"
@@ -263,6 +263,33 @@ export default class Content extends Component<ContentProps, ContentState> {
                     )]}
                 >
                     <Typography>This action is irreversible</Typography>
+                </ActionDialog>
+                <ActionDialog
+                    title="Bulk Download"
+                    open={this.state.modals.bulk_download.is_open}
+                    get_actions={(focus_ref: any) => [(
+                        <Button
+                            key={1}
+                            onClick={()=> {
+                                this.props.contents_api.bulk_download()
+                                this.close_modals()
+                            }}
+                            color="secondary"
+                        >
+                            Download
+                        </Button>
+                    ), (
+                        <Button
+                            key={2}
+                            onClick={this.close_modals}
+                            color="primary"
+                            ref={focus_ref}
+                        >
+                            Cancel
+                        </Button>
+                    )]}
+                >
+                    <Typography>Bulk download may take some time</Typography>
                 </ActionDialog>
                 <ContentModal
                     is_open={add.is_open}
