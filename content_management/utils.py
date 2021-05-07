@@ -215,7 +215,8 @@ class LibraryBuildUtil:
         :return: boolean value indicating success/failure of operation
         """
         dir_path = os.path.join(os.path.abspath(settings.BUILDS_ROOT), self.version.version_number, "content/")
-        os.makedirs(dir_path)
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
         print("Directory '% s' successfully created" % dir_path)
         try:
             for content in files_list:
