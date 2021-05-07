@@ -42,7 +42,7 @@ class LibraryDbUtil:
             c = conn.cursor()
             c.execute(create_table_sql)
         except Error as e:
-            print(e)
+            raise Exception("error while creating sql tables:" + str(e))
 
     def insert_data(self, conn):
         """ insert bulk data from DLMS to sqlite
@@ -55,14 +55,14 @@ class LibraryDbUtil:
             c.executemany('INSERT INTO metadata VALUES (?,?,?,?)', self.metadata)
             c.executemany('INSERT INTO folder VALUES (?,?,?,?)', self.folders)
             c.executemany('INSERT INTO module VALUES (?,?,?)', self.modules)
-            c.executemany('INSERT INTO content VALUES (?,?,?,?,?,?,?,?)', self.contents)
+            c.executemany('INSERT INTO content VALUES (?,?,?,?,?,?,?,?,?)', self.contents)
             c.executemany('INSERT INTO content_metadata VALUES (?,?)', self.content_metadata)
-            c.executemany('INSERT INTO content_folder VALUES (?,?,?,?)', self.content_folder)
+            c.executemany('INSERT INTO content_folder VALUES (?,?,?,?,?)', self.content_folder)
         except Error as e:
-            print(e)
+            raise Exception("error while inserting data into tables:" + str(e))
 
-    def create_library_db(self):
-        database = os.path.join(os.path.abspath(settings.BUILDS_ROOT), 'solarspell.db')
+    def create_library_db(self, version):
+        database = os.path.join(os.path.abspath(settings.BUILDS_ROOT), version.version_number, 'solarspell.db')
         sql_create_metadata_type_table = """CREATE TABLE IF NOT EXISTS metadata_type (
                                         id INTEGER PRIMARY KEY,
                                         type_name TEXT NOT NULL
@@ -94,7 +94,8 @@ class LibraryDbUtil:
                                             published_date TEXT,
                                             copyright_notes TEXT,
                                             rights_statement TEXT,
-                                            file_size REAL
+                                            file_size REAL,
+                                            keywords TEXT
                                         ); """
         sql_create_content_metadata_table = """ CREATE TABLE IF NOT EXISTS content_metadata (
                                                content_id INTEGER NOT NULL,
@@ -103,13 +104,28 @@ class LibraryDbUtil:
                                                FOREIGN KEY (metadata_id) REFERENCES metadata (id)                             
                                            ); """
         sql_create_content_folder_table = """ CREATE TABLE IF NOT EXISTS content_folder (
-                                               content_id INTEGER NOT NULL,
+                                               id INTEGER NOT NULL,
                                                folder_id INTEGER NOT NULL,
                                                title TEXT,
+                                               file_name TEXT,
                                                file_size REAL,
-                                               FOREIGN KEY (content_id) REFERENCES content (id)                                                               
+                                               FOREIGN KEY (id) REFERENCES content (id)                                                               
                                                FOREIGN KEY (folder_id) REFERENCES folder (id)                             
                                            ); """
+        sql_create_content_fts_table = """ CREATE VIRTUAL TABLE content_fts USING fts5(
+                                                title,
+                                                file_name UNINDEXED,
+                                                description,
+                                                file_size UNINDEXED,
+                                                keywords,
+                                                content = 'content',
+                                                content_rowid = 'id'                            
+                                           ); """
+        sql_create_content_fts_trigger = """CREATE TRIGGER content_ai AFTER INSERT ON content
+                                            BEGIN
+                                                INSERT INTO content_fts (rowid, title, file_name, description, file_size, keywords)
+                                                VALUES (new.id, new.title, new.file_name, new.description, new.file_size, new.keywords);
+                                            END;"""
 
         # create a database connection
         conn = self.create_connection(database)
@@ -123,10 +139,11 @@ class LibraryDbUtil:
             self.create_table(conn, sql_create_content_table)
             self.create_table(conn, sql_create_content_metadata_table)
             self.create_table(conn, sql_create_content_folder_table)
-
+            self.create_table(conn, sql_create_content_fts_table)
+            self.create_table(conn, sql_create_content_fts_trigger)
             # insert data
             self.insert_data(conn)
             conn.commit()
         else:
-            print("Error! cannot create the database connection.")
+            raise Exception("Error! cannot create the database connection.")
         conn.close()

@@ -520,8 +520,8 @@ class LibraryBuildView(views.APIView):
 
     def get(self, request, *args, **kwargs):
         version_id = int(kwargs['version_id'])
-        build_util = LibraryBuildUtil()
-        result = build_util.build_library(version_id)
+        build_util = LibraryBuildUtil(version_id)
+        result = build_util.build_library()
         response = build_response(result)
         return response
 
