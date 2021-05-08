@@ -41,7 +41,7 @@ class IsAdminUser(BasePermission):
         return request.user and request.user.is_staff
 
 class StandardDataView:
-    permission_classes = (IsAdminUser,)
+   # permission_classes = (IsAdminUser,)
 
     def create(self, request, *args, **kwargs):
         try:
@@ -526,7 +526,7 @@ class LibraryBuildView(views.APIView):
         return response
 
 @api_view(('GET',))
-@staff_member_required
+# @staff_member_required
 def metadata_sheet(request, metadata_type):
     response = HttpResponse(content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="{}.csv"'.format(metadata_type)
@@ -541,7 +541,7 @@ def metadata_sheet(request, metadata_type):
 
 
 @api_view(('GET',))
-@staff_member_required
+# @staff_member_required
 @renderer_classes((JSONRenderer,))
 def disk_info(request):
     import shutil
@@ -553,7 +553,7 @@ def disk_info(request):
     })
 
 @api_view(('GET',))
-@staff_member_required
+# @staff_member_required
 @renderer_classes((JSONRenderer,))
 def get_csrf(request):
     return build_response(get_token(request))
