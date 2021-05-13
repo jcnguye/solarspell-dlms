@@ -397,6 +397,7 @@ class LibraryVersionViewSet(StandardDataView, viewsets.ModelViewSet):
         version_to_clone.save()
         
         version_to_clone.library_modules.set(modules)
+        version_to_clone.created_on = datetime.datetime.now()
         version_to_clone.save()
 
 

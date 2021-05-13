@@ -8,6 +8,7 @@ import { APP_URLS, get_data } from '../urls';
 import { update_state } from '../utils';
 import { cloneDeep, get, range } from 'lodash';
 import React from 'react';
+import { debounce } from "lodash";
 
 interface GlobalStateProps {
     render: React.ComponentType<{
@@ -27,6 +28,7 @@ interface GlobalStateState {
 export default class GlobalState extends React.Component<GlobalStateProps, GlobalStateState> {
     search_defaults: search_state
     update_state: (update_func: (draft: GlobalStateState) => void) => Promise<void>
+    debounced_load_rows: () => Promise<any>
     constructor(props: GlobalStateProps) {
         super(props)
 
@@ -118,6 +120,9 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         //ContentsAPI
         this.delete_content = this.handle_loader(this.delete_content.bind(this))
         this.load_content_rows = this.handle_loader(this.load_content_rows.bind(this))
+        this.debounced_load_rows = debounce(
+            this.handle_loader(this.load_content_rows.bind(this)),
+            300, {leading: true, trailing: true})
         this.add_content = this.handle_loader(this.add_content.bind(this))
         this.edit_content = this.handle_loader(this.edit_content.bind(this))
         this.update_search_state = this.update_search_state.bind(this)
@@ -441,13 +446,13 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
     async set_contents_page(page: number) {
         return this.update_state(draft => {
             draft.contents_api.page = page
-        }).then(this.load_content_rows)
+        }).then(this.debounced_load_rows)
     }
 
     async set_contents_page_size(page_size: number) {
         return this.update_state(draft => {
             draft.contents_api.page_size = page_size
-        }).then(this.load_content_rows)
+        }).then(this.debounced_load_rows)
     }
 
     async set_sorting(sorting: Sorting[]) {
@@ -789,7 +794,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
     async add_content_to_folder(folder: LibraryFolder, to_add: SerializedContent[]) {
         return Axios.post(APP_URLS.LIBRARY_FOLDER_ADD_CONTENT(folder.id), {
             content_ids: to_add.map(content => content.id)
-        })
+        }).then(this.refresh_current_directory)
     }
 
     //create_child_folder creates a new folder

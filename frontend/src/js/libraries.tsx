@@ -1160,11 +1160,11 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                             key={1}
                             onClick={()=> {
                                 const path = this.props.library_versions_api.state.path
-                                this.props.library_versions_api.add_content_to_folder(
-                                    this.state.modals.move_content.destination_folder[0],
-                                    this.state.selected_files
-                                ).then(() => this.props.library_versions_api.remove_content_from_folder(
+                                this.props.library_versions_api.remove_content_from_folder(
                                     path[path.length - 1],
+                                    this.state.selected_files
+                                ).then(() => this.props.library_versions_api.add_content_to_folder(
+                                    this.state.modals.move_content.destination_folder[0],
                                     this.state.selected_files
                                 )).then(this.close_modals)
                             }}
