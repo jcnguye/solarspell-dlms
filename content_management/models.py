@@ -108,6 +108,11 @@ class LibLayoutImage(models.Model):
     def __str__(self):
         return f'{self.image_file.name}'
 
+@receiver(models.signals.post_delete, sender=LibLayoutImage)
+def on_image_delete(sender, instance, **kwargs):
+    if instance.image_file:
+        if os.path.isfile(instance.image_file.path):
+            os.remove(instance.image_file.path)
 
 class User(models.Model):
     name = models.CharField(max_length=300)
