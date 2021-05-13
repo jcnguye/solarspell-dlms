@@ -1,24 +1,24 @@
 import datetime
 import json
 import os
-from typing import Dict, Union
+import shutil
+from pathlib import Path
 
 from django.core.exceptions import ValidationError
 from django.core.files import File
 from django.utils import timezone
 from django.utils.text import get_valid_filename
 from rest_framework import status
-from django.db.models.functions import Substr
 
-from dlms import settings
 from content_management.library_db_utils import LibraryDbUtil
 from content_management.models import (
     Content,
     Metadata, MetadataType, LibraryFolder, LibraryModule, LibraryVersion)
 from content_management.validators import validate_unique_filename, validate_unique_file
 
-
 import hashlib
+
+from dlms import settings
 
 
 class ContentSheetUtil:
@@ -63,12 +63,12 @@ class ContentSheetUtil:
                         except Exception as e:
                             raise Exception(str(e))
                         try:
-                            upload_content_file(file_path, content)
+                            self.upload_content_file(file_path, content)
                         except (Exception, ValidationError) as e:
                             content.delete()
                             raise e
                         try:
-                            metadata = get_associated_meta(each_content)
+                            metadata = self.get_associated_meta(each_content)
                             for metadata_item in metadata:
                                 obj, created = Metadata.objects.get_or_create(defaults={'name': metadata_item.name},
                                                                               name__iexact=metadata_item.name,
@@ -96,59 +96,175 @@ class ContentSheetUtil:
             }
             return data
 
+    @staticmethod
+    def get_associated_meta(sheet_row):
+        meta_list = []
+        for metadata_type in MetadataType.objects.all():
+            if sheet_row.get(metadata_type.name) == '' or sheet_row.get(metadata_type.name) is None:
+                continue
+            meta_values = sheet_row[metadata_type.name].split(' | ')
+            for each_value in meta_values:
+                metadata = Metadata(name=each_value, type=metadata_type)
+                meta_list.append(metadata)
+        return meta_list
 
-def get_associated_meta(sheet_row):
-    meta_list = []
-    for metadata_type in MetadataType.objects.all():
-        if sheet_row.get(metadata_type.name) == '' or sheet_row.get(metadata_type.name) is None:
-            continue
-        meta_values = sheet_row[metadata_type.name].split(' | ')
-        for each_value in meta_values:
-            metadata = Metadata(name=each_value, type=metadata_type)
-            meta_list.append(metadata)
-    return meta_list
-
-
-def upload_content_file(full_path, content: Content):
-    content_file = open(full_path, "rb")
-    base_name = get_valid_filename(os.path.basename(content_file.name))
-    validate_unique_filename(File(content_file, base_name))
-    validate_unique_file(File(content_file, base_name))
-    content.file_name = base_name
-    content.content_file.save(base_name, File(content_file))
-    content_file.close()
+    @staticmethod
+    def upload_content_file(full_path, content: Content):
+        content_file = open(full_path, "rb")
+        base_name = get_valid_filename(os.path.basename(content_file.name))
+        validate_unique_filename(File(content_file, base_name))
+        validate_unique_file(File(content_file, base_name))
+        content.file_name = base_name
+        content.content_file.save(base_name, File(content_file))
+        content_file.close()
 
 
 class LibraryBuildUtil:
+    def __init__(self, version_id):
+        self.version = LibraryVersion.objects.get(pk=version_id)
 
-    def build_library(self, version_id):
-        metadata_types = LibraryVersion.metadata_types.through.objects.filter(libraryversion__id=version_id) \
+    def build_library(self):
+        metadata_types = LibraryVersion.metadata_types.through.objects.filter(
+            libraryversion__id=self.version.id) \
             .values_list('metadatatype_id', 'metadatatype__name')
-        metadata = Metadata.objects.filter(content__libraryfolder__version_id=version_id) \
+        metadata = Metadata.objects.filter(content__libraryfolder__version_id=self.version.id) \
             .filter(type__pk__in=metadata_types.values_list('metadatatype_id')).values_list('id', 'name',
                                                                                             'type__name',
                                                                                             'type_id').distinct('id')
-        folders = LibraryFolder.objects.filter(version_id=version_id).values_list('id', 'folder_name',
-                                                                                  'logo_img__image_file', 'parent_id')
-        modules = LibraryModule.objects.filter(libraryversion__id=version_id).values_list('id', 'module_name',
-                                                                                          'logo_img__image_file')
-        contents = Content.objects.filter(libraryfolder__version_id=version_id).values_list('id', 'title', 'description'
-                                                                                            ,
-                                                                                            Substr('content_file', 10),
-                                                                                            'published_date',
-                                                                                            'copyright_notes',
-                                                                                            'rights_statement',
-                                                                                            'filesize') \
-            .distinct('id')
-        contents_metadata = Content.metadata.through.objects.filter(content__libraryfolder__version_id=version_id) \
-            .values_list('content_id', 'metadata_id')
-        contents_folder = LibraryFolder.library_content.through.objects.filter(libraryfolder__version_id=version_id) \
-            .values_list('content_id', 'libraryfolder_id', 'libraryfolder__library_content__title', \
-                         'libraryfolder__library_content__filesize')
+        folders = LibraryFolder.objects.filter(version_id=self.version.id).values_list('id', 'folder_name',
+                                                                                       'logo_img__image_file',
+                                                                                       'parent_id')
+        modules = self.get_modules_names(LibraryModule.objects.filter(libraryversion__id=self.version.id)
+                                         .values('id',
+                                                 'module_file',
+                                                 'logo_img__image_file'))
+
+        contents = self.add_keywords(
+            Content.objects.filter(libraryfolder__version_id=self.version.id).values('id', 'title',
+                                                                                     'description',
+                                                                                     'file_name',
+                                                                                     'published_date',
+                                                                                     'copyright_notes',
+                                                                                     'rights_statement',
+                                                                                     'filesize').distinct())
+        contents_metadata = Content.metadata.through.objects.filter(content__libraryfolder__version_id=self.version.id) \
+            .filter(metadata_id__in=metadata.values_list('id')).values_list('content_id', 'metadata_id').distinct()
+        contents_folder = LibraryFolder.library_content.through.objects.filter(
+            libraryfolder__version_id=self.version.id) \
+            .values_list('content_id', 'libraryfolder_id', 'content__title', 'content__file_name',
+                         'content__filesize').distinct()
         db_util = LibraryDbUtil(metadata_types, metadata, folders, modules, contents, contents_metadata,
                                 contents_folder)
-        db_util.create_library_db()
-        return 'success'
+        try:
+            self.create_asset_folder(folders.filter(parent_id=None), modules)
+            db_util.create_library_db(self.version)
+            self.copy_library_files(contents)
+            print("success creating content folder")
+            data = {
+                'result': 'success',
+            }
+            return data
+
+        except Exception as e:
+            data = {
+                'result': 'error',
+                'error': str(e)
+            }
+            return data
+
+    def add_keywords(self, content):
+        """
+        This method returns the list of content with its associated list of keywords separated by space. We need this
+        for FTS in sqlite to lookup content using its keywords
+        :param content:
+        :return: a list of content with its associated list of keywords
+        """
+        content_with_keywords = []
+        try:
+            for content_item in content:
+                keywords_list = Content.metadata.through.objects.filter(content__id=content_item['id']) \
+                    .filter(metadata__type__name='Keywords').values_list('metadata__name', flat=True)
+                string_keywords = ' '.join([str(i) for i in keywords_list])
+                content_item['keywords'] = string_keywords
+                content_with_keywords.append(list(content_item.values()))
+            return list(content_with_keywords)
+        except Exception as e:
+            raise e
+
+    def get_modules_names(self, modules):
+        """
+        This method gets the names of the module files without their extension in order to create its associated url
+        later in the app
+        :param modules:
+        :return: same list of modules with its updated module name (without extension)
+        """
+        updated_modules_list = []
+        try:
+            for mod in modules:
+                module_name = Path(mod['module_file']).stem
+                mod['module_file'] = module_name
+                updated_modules_list.append(list(mod.values()))
+            return list(updated_modules_list)
+        except Exception as e:
+            raise e
+
+    def copy_library_files(self, files_list):
+        """
+        This method copy the files of the library to be built into a separate folder to be exported
+        :param files_list:
+        :return: boolean value indicating success/failure of operation
+        """
+        dir_path = os.path.join(os.path.abspath(settings.BUILDS_ROOT), self.version.version_number, "content/")
+        if not os.path.exists(dir_path):
+            os.makedirs(dir_path)
+        print("Directory '% s' successfully created" % dir_path)
+        try:
+            for content in files_list:
+                src_dir = os.path.join(os.path.abspath(settings.CONTENTS_ROOT), content[3])
+                shutil.copy(src_dir, dir_path)
+            return True
+        except FileNotFoundError:
+            print("file '% s' doesn't exist in content folder: " % src_dir)
+            os.remove(dir_path)
+
+    def create_asset_folder(self, categories, modules):
+        """
+        This method creates the asset folder that contains the logos, banner image, and a json file that has information
+         about the library version
+        """
+        logos_path = os.path.join(os.path.abspath(settings.BUILDS_ROOT), self.version.version_number,
+                                  "assets/images/logos")
+        banners_path = os.path.join(os.path.abspath(settings.BUILDS_ROOT), self.version.version_number,
+                                    "assets/images/banners")
+        config_path = os.path.join(os.path.abspath(settings.BUILDS_ROOT), self.version.version_number,
+                                   "assets/config.json")
+        if not os.path.exists(logos_path):
+            os.makedirs(logos_path)
+        print("Directory '% s' successfully created" % logos_path)
+        if not os.path.exists(banners_path):
+            os.makedirs(banners_path)
+        print("Directory '% s' successfully created" % banners_path)
+        try:
+            # copy categories icons
+            for cat in categories:
+                # logo_img__image_file is located at index 2
+                src_dir = os.path.join(os.path.abspath(settings.MEDIA_ROOT), cat[2])
+                shutil.copy(src_dir, logos_path)
+            # copy modules icons
+            for mod in modules:
+                # logo_img__image_file is located at index 2
+                src_dir = os.path.join(os.path.abspath(settings.MEDIA_ROOT), mod[2])
+                shutil.copy(src_dir, logos_path)
+            src_dir = os.path.join(os.path.abspath(settings.MEDIA_ROOT), self.version.library_banner.image_file.path)
+            shutil.copy(src_dir, banners_path)
+            # create config.json
+            config = {"version": self.version.version_number,
+                      "banner": "assets/" + self.version.library_banner.image_file.path}
+            with open(config_path, 'w') as f:
+                json.dump(config, f)
+            return True
+        except FileExistsError:
+            print("file '% exists in asset folder: " % src_dir)
 
 
 def sha256(bytestream):
