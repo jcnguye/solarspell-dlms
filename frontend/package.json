@@ -8,7 +8,7 @@
     "build": "npm run-script clean; webpack --mode=development",
     "build-prod": "npm run-script clean; webpack --mode=production",
     "build-bash": "npm run-script clean; webpack --mode=development",
-    "build-bash-prod": "(npm run clean 2> NUL || true) && webpack --mode=production",
+    "build-bash-prod": "npm run clean; webpack --mode=production",
     "clean": "rm -R ./static",
     "winclean": "rd /s /q static",
     "winbuild": "npm run-script winclean & webpack --mode=production",
