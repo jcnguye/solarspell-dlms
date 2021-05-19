@@ -173,6 +173,22 @@ class LibraryFolder(models.Model):
     parent = models.ForeignKey('self', on_delete=models.CASCADE, related_name="subfolders", null=True)
     library_content = models.ManyToManyField(Content, blank=True)
 
+    def breadcrumb(self):
+        parent = self.parent
+        arr = [{
+            "id": self.id,
+            "folder_name": self.folder_name,
+            "version": self.version.id,
+        }]
+        while parent != None:
+            arr.insert(0, {
+                "id": parent.id,
+                "folder_name": parent.folder_name,
+                "version": self.version.id,
+            })
+            parent = parent.parent
+        return arr
+
     def __str__(self):
         return f'{self.folder_name}'
 

@@ -49,7 +49,9 @@ class LibraryVersionSerializer(ModelSerializer):
 class LibraryFolderSerializer(ModelSerializer):
     class Meta:
         model = LibraryFolder
-        fields = '__all__'
+        fields = (
+            "id", "folder_name", "logo_img", "version", "parent", "library_content", "breadcrumb"
+        )
 
 
 class UserSerializer(ModelSerializer):

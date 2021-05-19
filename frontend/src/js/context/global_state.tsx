@@ -122,7 +122,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         this.load_content_rows = this.handle_loader(this.load_content_rows.bind(this))
         this.debounced_load_rows = debounce(
             this.handle_loader(this.load_content_rows.bind(this)),
-            300, {leading: true, trailing: true})
+            600, {leading: true, trailing: true})
         this.add_content = this.handle_loader(this.add_content.bind(this))
         this.edit_content = this.handle_loader(this.edit_content.bind(this))
         this.update_search_state = this.update_search_state.bind(this)
@@ -623,16 +623,17 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         return this.update_state(draft => {
             draft.library_versions_api.folders_in_version = folders.map(folder => [
                 folder,
-                //IIFE that recursively builds a path of LibraryFolders
-                (function build_path(path: LibraryFolder[]): LibraryFolder[] {
-                    const next_parent = path[path.length - 1].parent
-                    const parent_folder = folders.find(folder => folder.id === next_parent)
-                    return parent_folder === undefined ?
-                        path :
-                        build_path(path.concat(parent_folder))
-                })([folder])
-                //After the path is built turn it into a path string
-                    .map(folder => folder.folder_name).join("/")
+                folder.breadcrumb.map(folder => folder.folder_name).join("/")
+                ////IIFE that recursively builds a path of LibraryFolders
+                //(function build_path(path: LibraryFolder[]): LibraryFolder[] {
+                //    const next_parent = path[path.length - 1].parent
+                //    const parent_folder = folders.find(folder => folder.id === next_parent)
+                //    return parent_folder === undefined ?
+                //        path :
+                //        build_path(path.concat(parent_folder))
+                //})([folder])
+                ////After the path is built turn it into a path string
+                //    .map(folder => folder.folder_name).join("/")
             ])
         })
     }
@@ -679,7 +680,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
     async refresh_current_directory() {
         const length = this.state.library_versions_api.path.length
         return length > 0 ?
-            this._update_current_directory(this.state.library_versions_api.path[length - 1]) :
+            this._update_current_directory(this.state.library_versions_api.path[length - 1] as LibraryFolder) :
             this.enter_version_root(this.state.library_versions_api.current_version)
     }
 
@@ -697,16 +698,11 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             draft.library_versions_api.current_directory.folders = data[0].folders
         })
         return this.update_state(draft => {
-            draft.library_versions_api.path[draft.library_versions_api.path.length - 1] = data[1]
+            draft.library_versions_api.path = data[1].breadcrumb
         })
     }
 
-    async enter_folder(folder: LibraryFolder, back?: number) {
-        await this.update_state(draft => {
-            draft.library_versions_api.path = back === undefined ?
-                draft.library_versions_api.path.concat(folder) :
-                draft.library_versions_api.path.slice(0, draft.library_versions_api.path.length - back)
-        })
+    async enter_folder(folder: LibraryFolder, _back?: number) {
         return this._update_current_directory(folder)
     }
 
@@ -715,10 +711,9 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             await this.update_state(draft => {
                 draft.library_versions_api.path.pop()
             })
-            return this.state.library_versions_api.path.length > 0 ?
-                this._update_current_directory(
-                    this.state.library_versions_api.path[this.state.library_versions_api.path.length - 1]
-                ) :
+            const path = this.state.library_versions_api.path
+            return path.length > 0 ?
+                this._update_current_directory( path[path.length - 1] as LibraryFolder) :
                 this.enter_version_root(this.state.library_versions_api.current_version)
         }
     }

@@ -164,7 +164,8 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
             library_content: [],
             logo_img: 0,
             parent: null,
-            version: 0
+            version: 0,
+            breadcrumb: [],
         }
 
         this.library_module_default = {
@@ -1017,11 +1018,11 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                         const path = this.props.library_versions_api.state.path
                                         this.props.library_versions_api.create_child_folder(
                                             path.length > 0 ?
-                                                path[path.length - 1] :
+                                                path[path.length - 1] as LibraryFolder :
                                                 this.props.library_versions_api.state.current_version,
                                             this.state.modals.add_folder.name.value
                                         )
-                                        .then(this.close_modals)
+                                            .then(this.close_modals)
                                     }
                                 })
                             }}

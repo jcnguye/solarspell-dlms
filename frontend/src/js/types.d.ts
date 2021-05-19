@@ -172,6 +172,11 @@ type group_to_name = {
     [G in AssetGroup]: string
 }
 
+type path = {
+    id: number
+    folder_name: string
+}[]
+
 interface LibraryVersionsState {
     library_versions: LibraryVersion[]
     library_versions_page: number
@@ -185,8 +190,7 @@ interface LibraryVersionsState {
     current_version: LibraryVersion
     folders_in_version: Array<[LibraryFolder, string]>
     modules_in_version: LibraryModule[]
-    path: LibraryFolder[]
-    
+    path: path
 }
 
 interface LibraryAssetsState {
@@ -296,6 +300,7 @@ type LibraryFolder = {
     version: number
     parent: number | null
     library_content: number[]
+    breadcrumb: path
 }
 
 type User = {
