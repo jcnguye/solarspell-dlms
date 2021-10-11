@@ -83,7 +83,7 @@ WSGI_APPLICATION = 'dlms.wsgi.application'
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
 DATABASES = {
-    'default':env.db(),
+    'default': env.db(),
 }
 
 

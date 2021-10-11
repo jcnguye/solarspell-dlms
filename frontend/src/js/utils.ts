@@ -12,6 +12,22 @@ export const get_metadata = (metadata: SerializedMetadata[], id: number): Serial
     return get(filtered, 0, null)
 }
 
+int x = 1;
+
+const x: number = 1;
+
+const content = {
+    name: "My first content",
+
+}
+
+const subject = {
+    name: "Language Arts",
+    metadata_type: 3,
+}
+
+
+
 // Custom implementation of setState, just abstracts away boilerplate so we can save lines when using immer functions
 // Also allows us to use promises instead of a callback
 // Also gives us a way to update complex state by mutating it instead of making a new object every time
