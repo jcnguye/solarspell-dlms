@@ -1,9 +1,10 @@
 import { Sorting } from '@devexpress/dx-react-grid';
 import Axios from 'axios';
 import { format } from 'date-fns';
-import { APIs, AssetGroup, ContentsProviderState, content_fields, content_filters, LibraryAsset, LibraryAssetsState, LibraryFolder, LibraryVersion, LibraryVersionsState, MetadataProviderState, metadata_dict, search_state, SerializedContent, SerializedMetadata, SerializedMetadataType, User, UserProviderState, LibraryModulesState, LibraryModule,
+import { APIs, AssetGroup, ContentsProviderState, content_fields, content_filters, LibraryAsset, LibraryAssetsState, LibraryFolder, LibraryVersion, LibraryVersionsState, MetadataProviderState, search_state, SerializedContent, SerializedMetadata, SerializedMetadataType, User, UserProviderState, LibraryModulesState, LibraryModule,
 UtilsState, 
-show_metadata_column} from '../types';
+show_metadata_column,
+metadata_dict} from '../types';
 import { APP_URLS, get_data } from '../urls';
 import { update_state } from '../utils';
 import { cloneDeep, get, range } from 'lodash';
@@ -66,10 +67,11 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                 show_columns: {},
             },
             metadata_api: {
-                metadata: [],
                 metadata_by_type: {},
+                page_by_type: {},
                 metadata_types: [],
-                show_columns: {}
+                show_columns: {},
+                autocomplete_metadata: {},
             },
             library_assets_api: {
                 assets: [],
@@ -144,6 +146,8 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         this.edit_metadata = this.handle_loader(this.edit_metadata.bind(this))
         this.delete_metadata = this.handle_loader(this.delete_metadata.bind(this))
         this.set_view_metadata_column = this.set_view_metadata_column.bind(this)
+        this.set_metadata_page = this.set_metadata_page.bind(this)
+        this.update_autocomplete = this.update_autocomplete.bind(this)
 
         //Library Assets API
         this.add_library_asset = this.handle_loader(this.add_library_asset.bind(this))
@@ -469,18 +473,35 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
     //First updates metadata_types and then metadata and metadata_by_type
     async refresh_metadata() {
         const metadata_types: SerializedMetadataType[] = await get_data(APP_URLS.METADATA_TYPES)
+        metadata_types.forEach(meta_type => this.update_autocomplete(meta_type, ""))
         await this.update_state(draft => {
             draft.metadata_api.metadata_types = metadata_types
         })
 
-        const metadata: SerializedMetadata[] = await get_data(APP_URLS.METADATA)
+        const responses = await Promise.all(
+            metadata_types.map(
+                type => get_data(APP_URLS.METADATA_BY_TYPE(
+                    type.name,
+                    this.state.metadata_api.page_by_type[type.name]?.page || 1
+                ))
+                    .then(data => [type.name, data.results, data.count])
+            )
+        ) as [string, any, number][]
+
+
+
         return this.update_state(draft => {
-            draft.metadata_api.metadata = metadata
-            //Construct metadata_dict by iterating over each type and constructing a list from metadata filtered by type
-            draft.metadata_api.metadata_by_type = draft.metadata_api.metadata_types.reduce((metadata_dict: metadata_dict, current) => {
-                metadata_dict[current.name] = draft.metadata_api.metadata.filter(metadata => metadata.type_name == current.name)
-                return metadata_dict
-            }, {})
+            draft.metadata_api.metadata_by_type = responses.reduce((acc, current) => {
+                acc[current[0]] = current[1]
+                return acc
+            }, {} as metadata_dict)
+
+            responses.forEach(([type_name, _, count]) => {
+                draft.metadata_api.page_by_type[type_name] = {
+                    count: count,
+                    page: draft.metadata_api.page_by_type[type_name]?.page || 1
+                }
+            })
             //Add metadata_name to show_columns if it doesn't already exist
             //Parse cookies to see if the column should show up from cookies
             const in_cookies = (if_exists => {
@@ -537,7 +558,6 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             name: meta_name,
             type: meta_type.id
         })
-        console.log("called")
         return Promise.all([
             this.load_content_rows(),
             this.refresh_metadata()
@@ -568,6 +588,22 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             .filter(name => this.state.metadata_api.show_columns[name])
         
         document.cookie = `show_columns=${x.join(',')}`
+    }
+
+    async set_metadata_page(page: number, type_name: string) {
+        return this.update_state(draft => {
+            draft.metadata_api.page_by_type[type_name].page = page
+        })
+            .then(this.refresh_metadata)
+    }
+
+    async update_autocomplete(meta_type: SerializedMetadataType, name: string) {
+        const data = await get_data(
+            APP_URLS.METADATA_BY_TYPE(meta_type.name, 1, name)
+        )
+        this.update_state(draft => {
+            draft.metadata_api.autocomplete_metadata[meta_type.name] = data.results
+        })
     }
     
     // LIBRARY ASSETS -------------------------------------------------------
@@ -1049,7 +1085,9 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                     edit_metadata: this.edit_metadata,
                     edit_metadata_type: this.edit_metadata_type,
                     refresh_metadata: this.refresh_metadata,
-                    set_view_metadata_column: this.set_view_metadata_column
+                    set_view_metadata_column: this.set_view_metadata_column,
+                    set_metadata_page: this.set_metadata_page,
+                    update_autocomplete: this.update_autocomplete
                 },
                 users_api: {
                     state: this.state.users_api,

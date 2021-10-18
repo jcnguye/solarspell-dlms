@@ -4,7 +4,6 @@ import ExpansionPanel from "@material-ui/core/ExpansionPanel"
 import ExpansionPanelSummary from "@material-ui/core/ExpansionPanelSummary"
 import ExpansionPanelDetails from "@material-ui/core/ExpansionPanelSummary"
 import Grid from "@material-ui/core/Grid"
-import { get_string_from_error } from "./utils"
 
 import { APP_URLS } from "./urls"
 import { Typography, TextField } from "@material-ui/core"
@@ -15,7 +14,8 @@ import {
     FilteringState,
     IntegratedFiltering,
     PagingState,
-    IntegratedPaging
+    IntegratedPaging,
+    CustomPaging
 } from "@devexpress/dx-react-grid"
 import {
     Grid as DataGrid,
@@ -253,8 +253,14 @@ export default class Metadata extends Component<MetadataProps, MetadataState> {
                         >
                             <FilteringState columnExtensions={this.columnExtensions}/>
                             <IntegratedFiltering />
-                            <PagingState defaultPageSize={this.default_page_size} />
-                            <IntegratedPaging />
+                            <PagingState
+                                defaultPageSize={this.default_page_size}
+                                currentPage={this.props.metadata_api.state.page_by_type[metadata_type.name]?.page - 1}
+                                onCurrentPageChange={new_page => this.props.metadata_api.set_metadata_page(new_page + 1, metadata_type.name)}
+                            />
+                            <CustomPaging
+                                totalCount={this.props.metadata_api.state.page_by_type[metadata_type.name]?.count}
+                            />
                             <Table />
                             <TableHeaderRow />
                             <TableFilterRow />

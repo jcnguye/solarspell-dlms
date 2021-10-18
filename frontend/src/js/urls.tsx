@@ -79,7 +79,10 @@ const APP_URLS = {
     METADATA_ITEM: (id: number) => url_with_params(`${api_path}/metadata/${id}/`),
     METADATA_TYPE: (id: number) => url_with_params(`${api_path}/metadata_types/${id}/`),
     METADATA_TYPES: url_with_params(`${api_path}/metadata_types/`),
-    METADATA_BY_TYPE: (type: string) => url_with_params(`${api_path}/metadata/${type}/get/`),
+    METADATA_BY_TYPE: (type: string, page: number, name?: string) => url_with_params(
+        `${api_path}/metadata/${type}/get/`,
+        name ? [["page", page], ["name", name]] : [["page", page]]
+    ),
     METADATA_SHEET: (metadata_type: string) => url_with_params(`${api_path}/spreadsheet/metadata/${metadata_type}`),
     USERS: url_with_params(`${api_path}/users/`),
     LIBRARY_MODULE: (id: number) => url_with_params(`${api_path}/library_modules/${id}/`),

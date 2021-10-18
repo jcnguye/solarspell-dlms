@@ -74,6 +74,8 @@ type MetadataAPI = {
     edit_metadata: (old_meta: SerializedMetadata, new_name: string) => Promise<any>
     delete_metadata: (meta_type: SerializedMetadata) => Promise<any>
     set_view_metadata_column: (update_func: (draft: show_metadata_column) => void) => Promise<any>
+    set_metadata_page: (page: number, type_name: string) => Promise<any>
+    update_autocomplete: (meta_type: SerializedMetadataType, name: string) => Promise<any>
 }
 
 type LibraryAssetsAPI = {
@@ -99,7 +101,6 @@ type ContentsAPI = {
     set_page_size: (page_size: number) => Promise<any>
     set_sorting: (sorting: Sorting[]) => Promise<any>
     bulk_download: () => void
-    set_show_column: () => Promise<any>
 }
 
 type LibraryVersionsAPI = {
@@ -206,10 +207,14 @@ type show_metadata_column = {
 }
 
 type MetadataProviderState = {
-    metadata: SerializedMetadata[]
     metadata_by_type: metadata_dict
+    page_by_type: { [metadata_type: string]: {
+        count: number
+        page: number
+    }}
     metadata_types: SerializedMetadataType[]
     show_columns: show_metadata_column
+    autocomplete_metadata: metadata_dict
 }
 
 type ContentsProviderState = {

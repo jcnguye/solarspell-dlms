@@ -235,10 +235,15 @@ class ContentViewSet(StandardDataView, viewsets.ModelViewSet):
 class MetadataViewSet(StandardDataView, viewsets.ModelViewSet):
     queryset = Metadata.objects.all()
     serializer_class = MetadataSerializer
+    pagination_class = PageNumberSizePagination
 
     @action(methods=['get'], detail=True)
     def get(self, request, pk=None):
-        queryset = self.filter_queryset(Metadata.objects.filter(type__name=pk))
+        name = request.GET.get("name", None)
+        queryset = self.filter_queryset(Metadata.objects.filter(
+            type__name=pk,
+            **({"name__icontains":name} if name is not None else dict())
+        ))
 
         page = self.paginate_queryset(queryset)
         if page != None:

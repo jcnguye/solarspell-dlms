@@ -365,7 +365,6 @@ export default class ContentModal extends Component<ContentModalProps, ContentMo
                                                     //valid_metadata with its new id
                                                     valid_meta.push(res?.data)
                                                     add_meta_tokens = []
-                                                    console.log(valid_meta)
                                                 })
                                                 .then(() => {
                                                     this.props.metadata_api.refresh_metadata()
@@ -410,7 +409,7 @@ export default class ContentModal extends Component<ContentModalProps, ContentMo
                                         }}
                                         handleHomeEndKeys
                                         options={this.props.metadata_api.state
-                                            .metadata_by_type[metadata_type.name]}
+                                            .autocomplete_metadata[metadata_type.name] || []}
                                         getOptionLabel={option => {
                                             if (isUndefined(option)) {
                                                 return "undefined"
@@ -431,6 +430,12 @@ export default class ContentModal extends Component<ContentModalProps, ContentMo
                                                 placeholder={metadata_type.name}
                                             />
                                         )}
+                                        onInputChange={(_, name) => {
+                                            this.props.metadata_api
+                                                .update_autocomplete(
+                                                    metadata_type, name
+                                                )
+                                        }}
                                     />
                                 </Grid>
                             )
