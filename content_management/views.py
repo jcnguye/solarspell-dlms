@@ -563,3 +563,15 @@ def disk_info(request):
 @renderer_classes((JSONRenderer,))
 def get_csrf(request):
     return build_response(get_token(request))
+
+@api_view(('POST',))
+# @staff_member_required
+@renderer_classes((JSONRenderer,))
+def bulk_edit(request):
+    to_remove = request.data.get("to_remove")
+    to_add = request.data.get("to_add")
+    for content in Content.objects.filter(id__in=request.data.get("to_edit")):
+        content.metadata.remove(*to_remove)
+        content.metadata.add(*to_add)
+
+    return build_response()

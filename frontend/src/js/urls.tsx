@@ -1,7 +1,7 @@
 import Axios from "axios"
 import { isUndefined } from 'lodash'
 import { format } from 'date-fns'
-import { content_filters, LibraryVersion } from './types'
+import { content_filters, LibraryVersion, SerializedContent, SerializedMetadata } from './types'
 
 const api_path = "api"
 
@@ -47,6 +47,7 @@ function get_filters_arr(page?: number, size?: number, filters?: content_filters
 
 const APP_URLS = {
     API: url_with_params(api_path),
+    BULK_EDIT: url_with_params(`${api_path}/bulk_edit/`),
     CONTENT: url_with_params(`${api_path}/contents/`),
     CONTENT_PAGE: (page: number, size: number, filters?: content_filters, exclude_if_in_version?: LibraryVersion) =>
         url_with_params(`${api_path}/contents/`, get_filters_arr(page, size, filters, exclude_if_in_version)),

@@ -136,6 +136,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         this.set_sorting = this.set_sorting.bind(this)
         this.bulk_download = this.bulk_download.bind(this)
         this.delete_selection = this.delete_selection.bind(this)
+        this.bulk_edit = this.bulk_edit.bind(this)
 
         //MetadataAPI
         this.refresh_metadata = this.handle_loader(this.refresh_metadata.bind(this))
@@ -465,6 +466,19 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             draft.contents_api.page = 0
         })
         return this.load_content_rows()
+    }
+
+    async bulk_edit(
+        to_add: SerializedMetadata[],
+        to_remove: SerializedMetadata[]
+    ) {
+        return Axios.post(APP_URLS.BULK_EDIT, {
+            to_edit: this.state.contents_api.selection.map(idx =>
+                this.state.contents_api.loaded_content[idx]?.id
+            ).filter(v => v !== undefined),
+            to_add: to_add.map(meta => meta.id),
+            to_remove: to_remove.map(meta => meta.id),
+        }).then(this.load_content_rows)
     }
 
     //METADATA ----------------------------------------------------------
@@ -1038,6 +1052,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                     set_sorting: this.set_sorting,
                     bulk_download: this.bulk_download,
                     delete_selection: this.delete_selection,
+                    bulk_edit: this.bulk_edit,
                 },
                 lib_assets_api: {
                     state: this.state.library_assets_api,

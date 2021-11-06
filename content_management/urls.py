@@ -5,8 +5,10 @@ from django.conf.urls.static import static
 from dlms import settings
 from .views import (
     ContentViewSet, MetadataViewSet, MetadataTypeViewSet, UserViewSet,
-    LibraryFolderViewSet, LibraryVersionViewSet, LibLayoutImageViewSet, LibraryBuildView, metadata_sheet, BulkAddView, get_csrf,
-    LibraryModuleViewSet, disk_info)
+    LibraryFolderViewSet, LibraryVersionViewSet, LibLayoutImageViewSet,
+    LibraryBuildView, metadata_sheet, BulkAddView, get_csrf, bulk_edit,
+    LibraryModuleViewSet, disk_info
+)
 
 router = routers.DefaultRouter()
 router.register(r'contents', ContentViewSet)
@@ -27,4 +29,5 @@ urlpatterns = [
     path('api/spreadsheet/metadata/<str:metadata_type>', metadata_sheet),
     path('api/disk_info/', disk_info),
     path('api/get_csrf/', get_csrf),
+    path('api/bulk_edit/', bulk_edit),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

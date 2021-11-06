@@ -2,18 +2,19 @@ import React, { Component } from 'react';
 
 
 import { APP_URLS } from './urls';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, isUndefined } from 'lodash';
 import ActionDialog from './reusable/action_dialog';
-import {Box, Button, Checkbox, Typography} from '@material-ui/core';
+import {Box, Button, Checkbox, TextField, Typography} from '@material-ui/core';
 import Axios from 'axios';
 import VALIDATORS from './validators';
 import { update_state } from './utils';
 import ContentModal from './reusable/content_modal';
 
-import { MetadataAPI, SerializedContent, ContentsAPI } from './types';
+import { MetadataAPI, SerializedContent, ContentsAPI, SerializedMetadata, metadata_dict } from './types';
 import { ViewContentModal } from './reusable/view_content_modal';
 import ContentSearch from './reusable/content_search';
 import BulkContentModal from "./reusable/bulk_content_modal";
+import {Autocomplete, createFilterOptions} from '@material-ui/lab';
 
 
 interface ContentProps {
@@ -47,6 +48,11 @@ interface ContentModals {
     bulk_add: {
         is_open: boolean
     }
+    bulk_edit: {
+        is_open: boolean
+        to_add: metadata_dict
+        to_remove: metadata_dict
+    }
     column_select: {
         is_open: boolean
     }
@@ -61,6 +67,7 @@ export default class Content extends Component<ContentProps, ContentState> {
 
     modal_defaults: ContentModals
     content_defaults: SerializedContent
+    auto_complete_filter: any;
 
     constructor(props: ContentProps) {
         super(props)
@@ -104,6 +111,11 @@ export default class Content extends Component<ContentProps, ContentState> {
             bulk_add: {
                 is_open: false,
             },
+            bulk_edit: {
+                is_open: false,
+                to_add: {},
+                to_remove: {},
+            },
             column_select: {
                 is_open: false,
             },
@@ -115,6 +127,10 @@ export default class Content extends Component<ContentProps, ContentState> {
         this.state = {
             modals: cloneDeep(this.modal_defaults)
         }
+
+        this.auto_complete_filter = createFilterOptions<(string | SerializedMetadata)[]>({
+            ignoreCase: true
+        })
 
         this.close_modals = this.close_modals.bind(this)
         this.update_state = this.update_state.bind(this)
@@ -190,6 +206,21 @@ export default class Content extends Component<ContentProps, ContentState> {
                     }}
                 >
                     Bulk Download
+                </Button>
+                <Button
+                    onClick={_ => {
+                        this.update_state(draft => {
+                            draft.modals.bulk_edit.is_open = true
+                        })
+                    }}
+                    style={{
+                        marginLeft: "1em",
+                        marginBottom: "1em",
+                        backgroundColor: "#75b2dd",
+                        color: "#FFFFFF"
+                    }}
+                >
+                    Bulk Edit
                 </Button>
                 <Button
                     onClick={_ => {
@@ -413,6 +444,242 @@ export default class Content extends Component<ContentProps, ContentState> {
                             </Box>
                         </Box>
                     })}
+                </ActionDialog>
+                <ActionDialog
+                    title={`Bulk Edit ${
+                        this.props.contents_api.state.selection.length
+                    } Items`}
+                    open={this.state.modals.bulk_edit.is_open}
+                    get_actions={focus_ref => [(
+                        <Button
+                            key={2}
+                            onClick={() => {
+                                this.update_state(draft => {
+                                    draft.modals.bulk_edit.is_open = false
+                                })
+                            }}
+                            color="secondary"
+                            ref={focus_ref}
+                        >
+                            Close
+                        </Button>
+                    ), (
+                        <Button
+                            key={2}
+                            onClick={() => {
+                                this.update_state(draft => {
+                                    draft.modals.bulk_edit.is_open = false
+                                })
+                                if (
+                                    this.props.contents_api.state.selection.length > 0
+                                ) {
+                                    this.props.contents_api.bulk_edit(
+                                        ([] as SerializedMetadata[]).concat(
+                                            ...Object.values(
+                                                this.state.modals.bulk_edit.to_add
+                                            )
+                                        ),
+                                        ([] as SerializedMetadata[]).concat(
+                                            ...Object.values(
+                                                this.state.modals.bulk_edit.to_remove
+                                            )
+                                        ),
+                                    )
+                                }
+                            }}
+                            color="primary"
+                            ref={focus_ref}
+                        >
+                            Edit
+                        </Button>
+                    )]}
+                >
+                    <Typography variant="h5">Add Metadata</Typography>
+                    {this.props.metadata_api.state.metadata_types
+                        .map(metadata_type => <Autocomplete
+                            multiple
+                            value={this.state.modals.bulk_edit
+                                .to_add[metadata_type.name]}
+                            onChange={(_evt, value: SerializedMetadata[]) => {
+                                //Determine which tokens are real or generated
+                                //by the "Add new metadata ..." option
+                                let valid_meta = value.filter(
+                                    to_check => to_check.id !== 0
+                                )
+                                let add_meta_tokens = value.filter(
+                                    to_check => to_check.id === 0
+                                )
+                                if (add_meta_tokens.length > 0) {
+                                    const to_add = add_meta_tokens[0]
+                                    this.props.metadata_api.add_metadata(
+                                        to_add.name, metadata_type
+                                    ).then(res => {
+                                        //add the created metadata to
+                                        //valid_metadata with its new id
+                                        valid_meta.push(res?.data)
+                                        add_meta_tokens = []
+                                    })
+                                    .then(() => {
+                                        this.props.metadata_api.refresh_metadata()
+                                    })
+                                    .then(() => {
+                                        this.update_state(draft => {
+                                            draft.modals.bulk_edit
+                                                .to_add[metadata_type.name]
+                                                = valid_meta
+                                        })
+                                    })
+                                } else {
+                                    this.update_state(draft => {
+                                        draft.modals.bulk_edit
+                                            .to_add[metadata_type.name]
+                                            = valid_meta
+                                    })
+                                }
+
+                            }}
+                            filterOptions={(options, params) => {
+                                const filtered = this.auto_complete_filter(
+                                    options, params
+                                )
+                                const already_loaded_metadata = this.props
+                                    .metadata_api.state
+                                    .metadata_by_type[metadata_type.name]
+                                    ?.find(match =>
+                                        match.name == params.inputValue)
+                                if (
+                                    params.inputValue !== '' &&
+                                    isUndefined(already_loaded_metadata)
+                                ) {
+                                    filtered.push({
+                                        id: 0,
+                                        name: params.inputValue,
+                                        type: metadata_type.id,
+                                        type_name: metadata_type.name
+                                    } as SerializedMetadata)
+                                }
+                                return filtered
+                            }}
+                            handleHomeEndKeys
+                            options={this.props.metadata_api.state
+                                .autocomplete_metadata[metadata_type.name] || []}
+                            getOptionLabel={option => {
+                                if (isUndefined(option)) {
+                                    return "undefined"
+                                }
+                                return option.id === 0 ?
+                                    `Add new Metadata "${option.name}"` :
+                                    option.name
+                            }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    variant={"standard"}
+                                    label={metadata_type.name}
+                                    placeholder={metadata_type.name}
+                                />
+                            )}
+                            onInputChange={(_, name) => {
+                                this.props.metadata_api
+                                    .update_autocomplete(
+                                        metadata_type, name
+                                    )
+                            }}
+                        />
+                    )}
+                    <Typography variant="h5">Remove Metadata</Typography>
+                    {this.props.metadata_api.state.metadata_types
+                        .map(metadata_type => <Autocomplete
+                            multiple
+                            value={this.state.modals.bulk_edit
+                                .to_remove[metadata_type.name]}
+                            onChange={(_evt, value: SerializedMetadata[]) => {
+                                //Determine which tokens are real or generated
+                                //by the "Add new metadata ..." option
+                                let valid_meta = value.filter(
+                                    to_check => to_check.id !== 0
+                                )
+                                let add_meta_tokens = value.filter(
+                                    to_check => to_check.id === 0
+                                )
+                                if (add_meta_tokens.length > 0) {
+                                    const to_add = add_meta_tokens[0]
+                                    this.props.metadata_api.add_metadata(
+                                        to_add.name, metadata_type
+                                    ).then(res => {
+                                        //add the created metadata to
+                                        //valid_metadata with its new id
+                                        valid_meta.push(res?.data)
+                                        add_meta_tokens = []
+                                    })
+                                    .then(() => {
+                                        this.props.metadata_api.refresh_metadata()
+                                    })
+                                    .then(() => {
+                                        this.update_state(draft => {
+                                            draft.modals.bulk_edit
+                                                .to_remove[metadata_type.name]
+                                                = valid_meta
+                                        })
+                                    })
+                                } else {
+                                    this.update_state(draft => {
+                                        draft.modals.bulk_edit
+                                            .to_remove[metadata_type.name]
+                                            = valid_meta
+                                    })
+                                }
+
+                            }}
+                            filterOptions={(options, params) => {
+                                const filtered = this.auto_complete_filter(
+                                    options, params
+                                )
+                                const already_loaded_metadata = this.props
+                                    .metadata_api.state
+                                    .metadata_by_type[metadata_type.name]
+                                    ?.find(match =>
+                                        match.name == params.inputValue)
+                                if (
+                                    params.inputValue !== '' &&
+                                    isUndefined(already_loaded_metadata)
+                                ) {
+                                    filtered.push({
+                                        id: 0,
+                                        name: params.inputValue,
+                                        type: metadata_type.id,
+                                        type_name: metadata_type.name
+                                    } as SerializedMetadata)
+                                }
+                                return filtered
+                            }}
+                            handleHomeEndKeys
+                            options={this.props.metadata_api.state
+                                .autocomplete_metadata[metadata_type.name] || []}
+                            getOptionLabel={option => {
+                                if (isUndefined(option)) {
+                                    return "undefined"
+                                }
+                                return option.id === 0 ?
+                                    `Add new Metadata "${option.name}"` :
+                                    option.name
+                            }}
+                            renderInput={(params) => (
+                                <TextField
+                                    {...params}
+                                    variant={"standard"}
+                                    label={metadata_type.name}
+                                    placeholder={metadata_type.name}
+                                />
+                            )}
+                            onInputChange={(_, name) => {
+                                this.props.metadata_api
+                                    .update_autocomplete(
+                                        metadata_type, name
+                                    )
+                            }}
+                        />
+                    )}
                 </ActionDialog>
             </React.Fragment>
         )

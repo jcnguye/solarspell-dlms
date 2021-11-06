@@ -101,6 +101,8 @@ type ContentsAPI = {
     set_page_size: (page_size: number) => Promise<any>
     set_sorting: (sorting: Sorting[]) => Promise<any>
     bulk_download: () => void
+    bulk_edit: (to_add: SerializedMetadata[], to_remove: SerializedMetadata[])
+        => Promise<any>
 }
 
 type LibraryVersionsAPI = {

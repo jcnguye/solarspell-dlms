@@ -10,6 +10,7 @@
     "build-bash": "npm run-script clean; webpack --mode=development",
     "build-bash-prod": "npm run clean; webpack --mode=production",
     "clean": "rm -R ./static",
+    "watch": "npm run-script clean && webpack --watch --mode=development",
     "winclean": "rd /s /q static",
     "winbuild": "npm run-script winclean & webpack --mode=production",
     "winbuild-dev": "npm run-script winclean & webpack --mode=development",
