@@ -165,6 +165,7 @@ export default class Metadata extends Component<MetadataProps, MetadataState> {
                     return set(panel_data, [metadata_type.name], false) 
                 }, {} as panel_data)
             })
+        
         }
     }
 
@@ -227,7 +228,7 @@ export default class Metadata extends Component<MetadataProps, MetadataState> {
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <DataGrid
-                            rows={((val => val === undefined ? [] : val))(this.props.metadata_api.state.metadata_by_type[metadata_type.name])}
+                            rows={this.props.metadata_api.state.autocomplete_metadata[metadata_type.name] || []}
                             columns={[
                                 { name: 'actions', title: 'Actions', getCellValue: (row: SerializedMetadata) => {
                                     return (
@@ -251,7 +252,15 @@ export default class Metadata extends Component<MetadataProps, MetadataState> {
                                 { name: 'name', title: "Metadata Name" }
                             ]}
                         >
-                            <FilteringState columnExtensions={this.columnExtensions}/>
+                            <FilteringState
+                                columnExtensions={this.columnExtensions}
+                                onFiltersChange={filters => filters.map(
+                                    filter => this.props.metadata_api
+                                        .update_autocomplete(
+                                            metadata_type, filter.value || ""
+                                        )
+                                )}
+                            />
                             <IntegratedFiltering />
                             <PagingState
                                 defaultPageSize={this.default_page_size}

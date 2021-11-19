@@ -268,26 +268,33 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                                     </Select>
                                 </Container>
                             </Grid>
-                            {Object.entries(metadata_api.state.metadata_by_type).map((entry: [string, SerializedMetadata[]], idx) => {
-                                const [metadata_type, metadata] = entry
+                            {metadata_api.state.metadata_types.map((metadata_type, idx) => {
                                 return (
                                     <Grid item xs={4} key={idx}>
                                         <Autocomplete
                                             multiple
-                                            options={metadata}
+                                            options={this.props.metadata_api.state
+                                                .autocomplete_metadata
+                                                    [metadata_type.name] || []}
                                             getOptionLabel={option => option.name}
                                             renderInput={(params) => (
                                                 <TextField
                                                     {...params}
                                                     variant={"standard"}
-                                                    label={metadata_type}
-                                                    placeholder={metadata_type}
+                                                    label={metadata_type.name}
+                                                    placeholder={metadata_type.name}
                                                 />
                                             )}
                                             onChange={(_evt, values) => {
                                                 contents_api.update_search_state(draft => {
-                                                    draft.metadata[metadata_type] = values
+                                                    draft.metadata[metadata_type.name] = values
                                                 })
+                                            }}
+                                            onInputChange={(_, name) => {
+                                                this.props.metadata_api
+                                                    .update_autocomplete(
+                                                        metadata_type, name
+                                                    )
                                             }}
                                         />
                                     </Grid>
