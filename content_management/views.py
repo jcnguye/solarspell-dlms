@@ -376,6 +376,16 @@ class LibraryVersionViewSet(StandardDataView, viewsets.ModelViewSet):
         )
         return build_response()
 
+    @action(methods=["get"], detail=False)
+    def filter_prefix(self, request):
+        prefix = request.GET.get("prefix", "")
+        return build_response(LibraryVersionSerializer(
+            LibraryVersion.objects.all()
+                .filter(library_name__icontains=prefix)
+                [:10],
+            many=True
+        ).data)
+
     @action(methods=['get'], detail=True)
     def clone(self, request, pk=None):
         if pk is None:
@@ -428,7 +438,7 @@ class LibraryVersionViewSet(StandardDataView, viewsets.ModelViewSet):
         ]
 
         return build_response(LibraryVersionSerializer(version_to_clone).data)
-
+    
 
 
 class LibraryFolderViewSet(StandardDataView, viewsets.ModelViewSet):
@@ -505,6 +515,87 @@ class LibraryFolderViewSet(StandardDataView, viewsets.ModelViewSet):
             )
 
         return build_response()
+
+    @action(methods=["post"], detail=True)
+    def move_to(self, request, pk=None):
+        if pk is None:
+            return build_response(
+                status=status.HTTP_400_BAD_REQUEST,
+                success=False,
+                error="No Folder ID supplied"
+            )
+        
+        def update_child_version(folder, version):
+            folder.version = version
+            folder.save()
+            for child in folder.subfolders.all():
+                update_child_version(child, version)
+
+        folder_id = request.GET.get("dest_folder", None)
+        version_id = request.GET.get("dest_version", None)
+
+        if folder_id is not None:
+            destination = LibraryFolder.objects.get(id=int(folder_id))
+            to_move = LibraryFolder.objects.get(id=pk)
+            to_move.parent = destination
+            to_move.save()
+            update_child_version(to_move, destination.version)
+            return build_response()
+
+        if version_id is not None:
+            destination = LibraryVersion.objects.get(id=int(version_id))
+            to_move = LibraryFolder.objects.get(id=pk)
+            to_move.parent = None
+            to_move.save()
+            update_child_version(to_move, destination)
+            return build_response()
+
+        return build_response(
+            status=status.HTTP_400_BAD_REQUEST,
+            success=False,
+            error="No Destination Library or Folder supplied"
+        )
+
+    @action(methods=["post"], detail=True)
+    def copy_to(self, request, pk=None):
+        if pk is None:
+            return build_response(
+                status=status.HTTP_400_BAD_REQUEST,
+                success=False,
+                error="No Folder ID supplied"
+            )
+        
+        def copy_children_and_update(folder, version, new_parent):
+            old_id = folder.id
+            old_files = folder.library_content.all()
+            folder.id = None
+            folder.version = version
+            folder.parent = new_parent
+            folder.save()
+            folder.library_content.set(old_files)
+            for child in LibraryFolder.objects.get(id=old_id).subfolders.all():
+                copy_children_and_update(child, version, folder)
+
+        folder_id = request.GET.get("dest_folder", None)
+        version_id = request.GET.get("dest_version", None)
+
+        if folder_id is not None:
+            destination = LibraryFolder.objects.get(id=int(folder_id))
+            to_move = LibraryFolder.objects.get(id=pk)
+            copy_children_and_update(to_move, destination.version, destination)
+            return build_response()
+
+        if version_id is not None:
+            destination = LibraryVersion.objects.get(id=int(version_id))
+            to_move = LibraryFolder.objects.get(id=pk)
+            copy_children_and_update(to_move, destination, None)
+            return build_response()
+
+        return build_response(
+            status=status.HTTP_400_BAD_REQUEST,
+            success=False,
+            error="No Destination Library or Folder supplied"
+        )
 
 
 class LibraryModuleViewSet(StandardDataView, viewsets.ModelViewSet):

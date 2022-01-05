@@ -56,26 +56,52 @@ const APP_URLS = {
     CONTENT_BULK_DOWNLOAD: (filters?: content_filters) =>
         url_with_params(`${api_path}/contents/get_spreadsheet/`, get_filters_arr(undefined, undefined, filters)),
     CONTENT_FOLDER: url_with_params("media/contents/"),
+    COPY_FOLDER: (to_copy: number, dest_folder?: number, dest_version?: number) =>
+        url_with_params(
+            `${api_path}/library_folders/${to_copy}/copy_to/`,
+            dest_folder ?
+                [["dest_folder", dest_folder]] :
+                [["dest_version", dest_version]]
+        ),
     CSRF_TOKEN: url_with_params(`${api_path}/get_csrf/`),
     MODULE_FOLDER: url_with_params("media/modules/"),
     DISK_INFO: url_with_params(`${api_path}/disk_info/`),
     LIBRARY_ASSETS: url_with_params(`${api_path}/lib_layout_images/`),
-    LIBRARY_ASSET_ITEM: (id: number) => url_with_params(`${api_path}/lib_layout_images/${id}/`),
-    LIBRARY_FOLDER: (id: number) => url_with_params(`${api_path}/library_folders/${id}/`),
+    LIBRARY_ASSET_ITEM: (id: number) =>
+        url_with_params(`${api_path}/lib_layout_images/${id}/`),
+    LIBRARY_FOLDER: (id: number) =>
+        url_with_params(`${api_path}/library_folders/${id}/`),
     LIBRARY_FOLDERS: url_with_params(`${api_path}/library_folders/`),
-    LIBRARY_FOLDER_ADD_CONTENT: (folder_id: number) => url_with_params(`${api_path}/library_folders/${folder_id}/addcontent/`),
-    LIBRARY_FOLDER_REMOVE_CONTENT: (folder_id: number) => url_with_params(`${api_path}/library_folders/${folder_id}/removecontent/`),
-    LIBRARY_FOLDER_CONTENTS: (id: number) => url_with_params(`${api_path}/library_folders/${id}/contents/`),
-    LIBRARY_ROOT_FOLDERS: (id:number) => url_with_params(`${api_path}/library_versions/${id}/root/`),
-    LIBRARY_VERSION: (id: number) => url_with_params(`${api_path}/library_versions/${id}/`),
-    LIBRARY_VERSION_CLONE: (id: number) => url_with_params(`${api_path}/library_versions/${id}/clone/`),
-    LIBRARY_VERSION_FOLDERS: (id: number) => url_with_params(`${api_path}/library_versions/${id}/folders/`),
-    LIBRARY_VERSION_MODULES: (id: number) => url_with_params(`${api_path}/library_versions/${id}/modules/`),
-    LIBRARY_VERSION_ADD_MODULE: (id: number) => url_with_params(`${api_path}/library_versions/${id}/addmodule/`),
-    LIBRARY_VERSION_ADD_METADATA: (id: number) => url_with_params(`${api_path}/library_versions/${id}/add_metadata_type/`),
-    LIBRARY_VERSION_remove_METADATA: (id: number) => url_with_params(`${api_path}/library_versions/${id}/remove_metadata_type/`),
-    LIBRARY_VERSION_REMOVE_MODULE: (id: number) => url_with_params(`${api_path}/library_versions/${id}/remove/`),
-    LIBRARY_VERSIONS: (page: number, size: number) => url_with_params(`${api_path}/library_versions/`, [["page", page], ["size", size]]),
+    LIBRARY_FOLDER_ADD_CONTENT: (folder_id: number) =>
+        url_with_params(`${api_path}/library_folders/${folder_id}/addcontent/`),
+    LIBRARY_FOLDER_REMOVE_CONTENT: (folder_id: number) =>
+        url_with_params(`${api_path}/library_folders/${folder_id}/removecontent/`),
+    LIBRARY_FOLDER_CONTENTS: (id: number) =>
+        url_with_params(`${api_path}/library_folders/${id}/contents/`),
+    LIBRARY_ROOT_FOLDERS: (id:number) =>
+        url_with_params(`${api_path}/library_versions/${id}/root/`),
+    LIBRARY_VERSION: (id: number) =>
+        url_with_params(`${api_path}/library_versions/${id}/`),
+    LIBRARY_VERSION_CLONE: (id: number) =>
+        url_with_params(`${api_path}/library_versions/${id}/clone/`),
+    LIBRARY_VERSION_FOLDERS: (id: number) =>
+        url_with_params(`${api_path}/library_versions/${id}/folders/`),
+    LIBRARY_VERSION_MODULES: (id: number) =>
+        url_with_params(`${api_path}/library_versions/${id}/modules/`),
+    LIBRARY_VERSION_ADD_MODULE: (id: number) =>
+        url_with_params(`${api_path}/library_versions/${id}/addmodule/`),
+    LIBRARY_VERSION_ADD_METADATA: (id: number) =>
+        url_with_params(`${api_path}/library_versions/${id}/add_metadata_type/`),
+    LIBRARY_VERSION_remove_METADATA: (id: number) =>
+        url_with_params(`${api_path}/library_versions/${id}/remove_metadata_type/`),
+    LIBRARY_VERSION_REMOVE_MODULE: (id: number) =>
+        url_with_params(`${api_path}/library_versions/${id}/remove/`),
+    LIBRARY_VERSION_PREFIX: (prefix: string) => url_with_params(
+        `${api_path}/library_versions/filter_prefix/`, [["prefix", prefix]]
+    ),
+    LIBRARY_VERSIONS: (page: number, size: number) => url_with_params(
+        `${api_path}/library_versions/`, [["page", page], ["size", size]]
+    ),
     METADATA: url_with_params(`${api_path}/metadata/`),
     METADATA_ITEM: (id: number) => url_with_params(`${api_path}/metadata/${id}/`),
     METADATA_TYPE: (id: number) => url_with_params(`${api_path}/metadata_types/${id}/`),
@@ -85,6 +111,13 @@ const APP_URLS = {
         name ? [["page", page], ["name", name]] : [["page", page]]
     ),
     METADATA_SHEET: (metadata_type: string) => url_with_params(`${api_path}/spreadsheet/metadata/${metadata_type}`),
+    MOVE_FOLDER: (to_move: number, dest_folder?: number, dest_version?: number) =>
+        url_with_params(
+            `${api_path}/library_folders/${to_move}/move_to/`,
+            dest_folder ?
+                [["dest_folder", dest_folder]] :
+                [["dest_version", dest_version]]
+        ),
     USERS: url_with_params(`${api_path}/users/`),
     LIBRARY_MODULE: (id: number) => url_with_params(`${api_path}/library_modules/${id}/`),
     LIBRARY_MODULES: url_with_params(`${api_path}/library_modules/`),

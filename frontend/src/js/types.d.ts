@@ -113,26 +113,46 @@ type LibraryVersionsAPI = {
     enter_parent: () => Promise<any>
     add_version: (name: string, library_version: string, user: number) => Promise<any>
     set_version_image: (version: LibraryVersion, asset: LibraryAsset) => Promise<any>
-    update_version: (version: LibraryVersion, name?: string, number?: string, user?: User) => Promise<any>
+    update_version: (
+        version: LibraryVersion, name?: string, number?: string, user?: User
+    ) => Promise<any>
     delete_version: (version: LibraryVersion) => Promise<any>
-    create_child_folder: (parent: LibraryFolder | LibraryVersion, name: string) => Promise<any>
+    create_child_folder: (
+        parent: LibraryFolder | LibraryVersion, name: string
+    ) => Promise<any>
     delete_folder: (folder: LibraryFolder) => Promise<any>
     rename_folder: (folder: LibraryFolder, new_name: string) => Promise<any>
     set_folder_banner: (folder: LibraryFolder, banner: LibraryAsset) => Promise<any>
     set_folder_logo: (folder: LibraryFolder, logo: LibraryAsset) => Promise<any>
     clone_version: (version: LibraryVersion) => Promise<any>
     refresh_current_directory: () => Promise<any>
-    remove_content_from_folder: (folder: LibraryFolder, to_remove: SerializedContent[]) => Promise<any>
-    add_content_to_folder: (folder: LibraryFolder, to_add: SerializedContent[]) => Promise<any>
+    remove_content_from_folder: (
+        folder: LibraryFolder, to_remove: SerializedContent[]
+    ) => Promise<any>
+    add_content_to_folder: (
+        folder: LibraryFolder, to_add: SerializedContent[]
+    ) => Promise<any>
     refresh_folders_in_current_version: () => Promise<any>
-    add_module_to_version: (version: LibraryVersion, module: LibraryModule) => Promise<any>
-    remove_module_from_version: (version: LibraryVersion, module: LibraryModule) => Promise<any>
+    add_module_to_version: (
+        version: LibraryVersion, module: LibraryModule) => Promise<any>
+    remove_module_from_version: (
+        version: LibraryVersion, module: LibraryModule
+    ) => Promise<any>
     refresh_modules_in_current_version: () => Promise<any>
     set_page_size: (size: number) => Promise<any>
     set_page: (page: number) => Promise<any>
-    add_metadata_type_to_version: (version: LibraryVersion, metadata_type: SerializedMetadataType) => Promise<LibraryVersion>
-    remove_metadata_type_to_version: (version: LibraryVersion, metadata_type: SerializedMetadataType) => Promise<LibraryVersion>
+    add_metadata_type_to_version: (
+        version: LibraryVersion, metadata_type: SerializedMetadataType
+    ) => Promise<LibraryVersion>
+    remove_metadata_type_to_version: (
+        version: LibraryVersion, metadata_type: SerializedMetadataType
+    ) => Promise<LibraryVersion>
     reset_to_defaults: () => Promise<any>
+    move_folder: (
+        to_move: number, copy: boolean, dest_folder?: number, dest_version?: number
+    ) => Promise<any>
+    update_version_autocomplete: (prefix: string) => Promise<any>
+    update_folder_autocomplete: (version: LibraryVersion) => Promise<any>
 }
 
 type UsersAPI = {
@@ -194,6 +214,8 @@ interface LibraryVersionsState {
     folders_in_version: Array<[LibraryFolder, string]>
     modules_in_version: LibraryModule[]
     path: path
+    autocomplete_versions: LibraryVersion[]
+    autocomplete_folders: LibraryFolder[]
 }
 
 interface LibraryAssetsState {

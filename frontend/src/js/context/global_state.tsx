@@ -102,6 +102,8 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                 path: [],
                 modules_in_version: [],
                 versions_page_sizes: versions_page_sizes,
+                autocomplete_folders: [],
+                autocomplete_versions: []
             },
             users_api: {
                 users: []
@@ -183,6 +185,9 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         this.add_metadata_type_to_version = this.handle_loader(this.add_metadata_type_to_version.bind(this))
         this.remove_metadata_type_to_version = this.handle_loader(this.remove_metadata_type_to_version.bind(this))
         this.reset_to_library_defaults = this.handle_loader(this.reset_to_library_defaults.bind(this))
+        this.move_folder = this.handle_loader(this.move_folder.bind(this))
+        this.update_folder_autocomplete = this.update_folder_autocomplete.bind(this)
+        this.update_version_autocomplete = this.update_version_autocomplete.bind(this)
         
         //Users API
         this.refresh_users = this.handle_loader(this.refresh_users.bind(this))
@@ -238,6 +243,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         this.refresh_library_modules()
         this.refresh_modules_in_current_version()
         this.get_disk_info()
+        this.update_version_autocomplete("")
     }
 
     // CONTENTS ----------------------------------------------------
@@ -674,20 +680,10 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             draft.library_versions_api.folders_in_version = folders.map(folder => [
                 folder,
                 folder.breadcrumb.map(folder => folder.folder_name).join("/")
-                ////IIFE that recursively builds a path of LibraryFolders
-                //(function build_path(path: LibraryFolder[]): LibraryFolder[] {
-                //    const next_parent = path[path.length - 1].parent
-                //    const parent_folder = folders.find(folder => folder.id === next_parent)
-                //    return parent_folder === undefined ?
-                //        path :
-                //        build_path(path.concat(parent_folder))
-                //})([folder])
-                ////After the path is built turn it into a path string
-                //    .map(folder => folder.folder_name).join("/")
             ])
         })
     }
-    
+
     //Load all library versions
     async refresh_library_versions(): Promise<any> {
         try {
@@ -956,6 +952,36 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         })
     }
 
+    async move_folder(
+        to_move: number, copy: boolean,
+        dest_folder?: number, dest_version?: number
+    ) {
+        return Axios.post((copy ?
+            APP_URLS.COPY_FOLDER :
+            APP_URLS.MOVE_FOLDER)(to_move, dest_folder, dest_version)
+        )
+            .then(this.refresh_current_directory)
+            .then(this.refresh_folders_in_current_version)
+    }
+
+    async update_version_autocomplete(prefix: string) {
+        const versions: LibraryVersion[] = await get_data(
+            APP_URLS.LIBRARY_VERSION_PREFIX(prefix)
+        )
+        return this.update_state(draft => {
+            draft.library_versions_api.autocomplete_versions = versions
+        })
+    }
+
+    async update_folder_autocomplete(version: LibraryVersion) {
+        const folders: LibraryFolder[] = await get_data(
+            APP_URLS.LIBRARY_VERSION_FOLDERS(version.id)
+        )
+        this.update_state(draft => {
+            draft.library_versions_api.autocomplete_folders = folders
+        })
+    }
+
     // USERS API -----------------------------------------------
     async refresh_users() {
         return get_data(APP_URLS.USERS)
@@ -1088,8 +1114,10 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                     set_page_size: this.set_versions_page_size,
                     add_metadata_type_to_version: this.add_metadata_type_to_version,
                     remove_metadata_type_to_version: this.remove_metadata_type_to_version,
-                    reset_to_defaults: this.reset_to_library_defaults
-
+                    reset_to_defaults: this.reset_to_library_defaults,
+                    move_folder: this.move_folder,
+                    update_version_autocomplete: this.update_version_autocomplete,
+                    update_folder_autocomplete: this.update_folder_autocomplete,
                 },
                 metadata_api: {
                     state: this.state.metadata_api,

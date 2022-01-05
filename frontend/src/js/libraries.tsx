@@ -23,7 +23,7 @@ import {
 import prettyBytes from 'pretty-bytes';
 import ActionPanel from './reusable/action_panel';
 import ActionDialog from './reusable/action_dialog';
-import { cloneDeep } from 'lodash';
+import { cloneDeep, isString } from 'lodash';
 import { get_field_info_default, update_state } from './utils';
 import VALIDATORS from './validators';
 import { ViewContentModal } from './reusable/view_content_modal';
@@ -109,6 +109,16 @@ interface LibrariesModals {
     set_version_metadata: {
         is_open: boolean
         library_version: LibraryVersion
+    }
+    move_folder: {
+        is_open: boolean
+        to_move: number
+        copy: boolean
+        top_level_folder: boolean
+        destination_folder: LibraryFolder
+        destination_folder_input: string
+        destination_library: LibraryVersion
+        destination_library_input: string
     }
 }
 
@@ -234,6 +244,18 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
             set_version_metadata: {
                 is_open: false,
                 library_version: cloneDeep(this.library_version_default)
+            },
+            move_folder: {
+                is_open: false,
+                to_move: 0,
+                copy: false,
+                top_level_folder: true,
+                destination_folder: {id: 0, folder_name: "None Selected"} as any,
+                destination_folder_input: "",
+                destination_library: {
+                    id: 0, library_name: "None Selected", version_number: "None"
+                } as any,
+                destination_library_input: "",
             }
         }
 
@@ -342,7 +364,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                     const user = this.props.users_api.state.users.find(user => user.id === row.created_by)
                                     return user === undefined ? "None" : user.name
                                 }},
-                                {name: "created_on", title: "Created On"}
+                                {name: "created_on", title: "Created On"},
                             ]}
                             
                             rows={this.props.library_versions_api.state.library_versions.map((version: any) => {
@@ -519,7 +541,24 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                                                     draft.modals.rename_folder.to_rename = cloneDeep(folder)
                                                                 })
                                                             }, "Rename"
+                                                        ], [
+                                                            () => {
+                                                                this.update_state(draft => {
+                                                                    draft.modals.move_folder.is_open = true
+                                                                    draft.modals.move_folder.to_move = folder.id
+                                                                    draft.modals.move_folder.copy = false
+                                                                })
+                                                            }, "Move"
+                                                        ], [
+                                                            () => {
+                                                                this.update_state(draft => {
+                                                                    draft.modals.move_folder.is_open = true
+                                                                    draft.modals.move_folder.to_move = folder.id
+                                                                    draft.modals.move_folder.copy = true
+                                                                })
+                                                            }, "Copy"
                                                         ]
+
                                                     ] as [() => void, string][]).concat(
                                                         //If we are in the top level version add set logo menu items
                                                         this.props.library_versions_api.state.path.length === 0 ?
@@ -1297,6 +1336,116 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                             </Box>
                         </Box>
                     })}
+                </ActionDialog>
+                <ActionDialog
+                    title={this.state.modals.move_folder.copy ?
+                        "Copy Folder To" : "Move Folder To"}
+                    open={this.state.modals.move_folder.is_open}
+                    get_actions={focus_ref => [(
+                        <Button
+                            key={1}
+                            onClick={this.close_modals}
+                            color="primary"
+                            ref={focus_ref}
+                        >
+                            Cancel
+                        </Button>
+                    ), (
+                        <Button
+                            key={2}
+                            onClick={() => {
+                                this.props.library_versions_api.move_folder(
+                                    this.state.modals.move_folder.to_move,
+                                    this.state.modals.move_folder.copy,
+                                    this.state.modals.move_folder
+                                        .destination_folder.id === 0 ||
+                                        this.state.modals.move_folder
+                                        .top_level_folder ?
+                                        undefined :
+                                        this.state.modals.move_folder
+                                            .destination_folder.id,
+                                    this.state.modals.move_folder
+                                        .destination_library.id === 0 ?
+                                        undefined :
+                                        this.state.modals.move_folder.destination_library.id,
+                                )
+                                this.close_modals()
+                            }}
+                            color="secondary"
+                            ref={focus_ref}
+                        >
+                            {this.state.modals.move_folder.copy ? "Copy" : "Move"}
+                        </Button>
+                    )]}
+                >
+                    <Autocomplete
+                        style={{
+                            minWidth: "600px"
+                        }}
+                        freeSolo
+                        value={this.state.modals.move_folder.destination_library}
+                        options={this.props.library_versions_api.state
+                            .autocomplete_versions}
+                        onChange={(_, input) => {
+                            if (isString(input)) {
+                                this.update_state(draft => {
+                                    draft.modals.move_folder.destination_library_input
+                                        = input
+                                })
+                            } else if (input !== null) {
+                                this.update_state(draft => {
+                                    draft.modals.move_folder.destination_library
+                                        = input
+                                })
+                                console.log("updating autocomplete")
+                                this.props.library_versions_api
+                                    .update_folder_autocomplete(input)
+                            }
+                        }}
+                        onInputChange={(_, prefix) => this.props.library_versions_api
+                            .update_version_autocomplete(prefix)}
+                        getOptionLabel={version => version.id == 0 ? "" :
+                            `${version.library_name} @ ${version.version_number}`}
+                        filterOptions={(options, params) => {
+                            return this.auto_complete_filter(options, params)
+                        }}
+                        renderInput={params => <TextField
+                            {...params}
+                            variant="standard"
+                            placeholder="Destination Version"
+                        />}
+                    />
+                    <Typography>Top Level Folder?</Typography>
+                    <Checkbox
+                        checked={this.state.modals.move_folder.top_level_folder}
+                        onChange={(_, checked) => this.update_state(draft => {
+                            draft.modals.move_folder.top_level_folder = checked
+                        })}
+                    />
+                    {this.state.modals.move_folder.top_level_folder ?
+                    <></> :
+                    <Autocomplete
+                        value={this.state.modals.move_folder.destination_folder}
+                        options={
+                            this.props.library_versions_api.state.autocomplete_folders
+                        }
+                        onChange={(_, folder) => {
+                            if (folder) this.update_state(draft => {
+                                draft.modals.move_folder.destination_folder = folder
+                            })
+                        }}
+                        getOptionLabel={folder =>
+                            folder.breadcrumb?.map(folder => folder.folder_name)
+                            .join("/") || ""}
+                        filterOptions={(options, params) => {
+                            return this.auto_complete_filter(options, params)
+                        }}
+                        renderInput={params => <TextField
+                            {...params}
+                            variant="standard"
+                            placeholder="Destination Folder"
+                        />}
+                    />}
                 </ActionDialog>
             </>
         )
