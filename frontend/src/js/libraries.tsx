@@ -149,6 +149,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
             filesize: 0,
             content_file: "",
             title: "",
+            display_title: "",
             description: null,
             modified_on: "",
             reviewed_on: "",

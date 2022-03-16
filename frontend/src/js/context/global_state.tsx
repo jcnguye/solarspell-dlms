@@ -43,6 +43,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             reviewed_from: null,
             reviewed_to: null,
             title: "",
+            display_title: "",
             years_from: null,
             years_to: null,
             duplicatable: "all"
@@ -303,6 +304,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             file_sizes,
             reviewed_on,
             title: search.title,
+            display_title: search.display_title,
             copyright_notes: search.copyright_notes,
             //Turn metadata_dict back to array of integers for search
             metadata: Object.keys(search.metadata).reduce((prev, current) => {
@@ -375,7 +377,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
     async add_content(fields: content_fields) {
         const form_data = new FormData()
         form_data.append('title', fields.title)
-        
+        form_data.append('display_title', fields.display_title)
         if (!fields.content_file) {
             Promise.reject("No Content File")
         } else {
@@ -410,6 +412,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             form_data.append("content_file", fields.content_file)
         }
         form_data.append('title', fields.title)
+        form_data.append('display_title', fields.display_title)
         form_data.append('description', fields.description)
         form_data.append('published_date', `${fields.year}-01-01`)
         if (fields.reviewed_on) {

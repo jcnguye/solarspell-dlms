@@ -80,6 +80,7 @@ export default class Content extends Component<ContentProps, ContentState> {
             filesize: 0,
             content_file: "",
             title: "",
+            display_title: "",
             description: null,
             modified_on: "",
             reviewed_on: "",
@@ -335,6 +336,7 @@ export default class Content extends Component<ContentProps, ContentState> {
                     validators={{
                         content_file: VALIDATORS.ADD_FILE,
                         title: VALIDATORS.TITLE,
+                        display_title: VALIDATORS.DISPLAY_TITLE,
                         description: VALIDATORS.DESCRIPTION,
                         year: VALIDATORS.YEAR,
                         reviewed_on: VALIDATORS.REVIEWED_ON,
@@ -362,6 +364,7 @@ export default class Content extends Component<ContentProps, ContentState> {
                     validators={{
                         content_file: VALIDATORS.EDIT_FILE,
                         title: VALIDATORS.TITLE,
+                        display_title: VALIDATORS.DISPLAY_TITLE,
                         description: VALIDATORS.DESCRIPTION,
                         year: VALIDATORS.YEAR,
                         reviewed_on: VALIDATORS.REVIEWED_ON,

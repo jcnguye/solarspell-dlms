@@ -37,6 +37,7 @@ export const ViewContentModal = ({
             <Grid item xs={4}>
                 {[
                     ["Title", row.title],
+                    ["Display Title", row.display_title],
                     ["Description", row.description],
                     ["Filename", <a href={new URL(row.file_name, APP_URLS.CONTENT_FOLDER).href}>{row.file_name}</a>],
                     ["Year of Publication", row.published_year],

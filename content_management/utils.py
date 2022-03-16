@@ -47,6 +47,10 @@ class ContentSheetUtil:
                         try:
                             content = Content()
                             content.title = each_content.get("Title")
+                            if each_content.get("Display Title"):
+                                content.display_title = each_content.get("Display Title")
+                            else:
+                                content.display_title = each_content.get("Title")
                             content.description = each_content.get("Description")
                             content.copyright_notes = each_content.get("Copyright Notes")
                             content.reviewed_on = datetime.datetime.now()
@@ -96,6 +100,10 @@ class ContentSheetUtil:
                     else:
                         try:
                             content.description = each_content.get("Description")
+                            if each_content.get("Display Title"):
+                                content.display_title = each_content.get("Display Title")
+                            else:
+                                content.display_title = each_content.get("Title")
                             content.copyright_notes = each_content.get("Copyright Notes")
                             content.reviewed_on = datetime.datetime.now()
                             content.rights_statement = each_content.get("Rights Statement")
@@ -187,7 +195,8 @@ class LibraryBuildUtil:
                                                  'logo_img__image_file'))
 
         contents = self.add_keywords(
-            Content.objects.filter(libraryfolder__version_id=self.version.id).values('id', 'title',
+            Content.objects.filter(libraryfolder__version_id=self.version.id).values('id',
+                                                                                     'display_title',
                                                                                      'description',
                                                                                      'file_name',
                                                                                      'published_date',
@@ -198,7 +207,7 @@ class LibraryBuildUtil:
             .filter(metadata_id__in=metadata.values_list('id')).values_list('content_id', 'metadata_id').distinct()
         contents_folder = LibraryFolder.library_content.through.objects.filter(
             libraryfolder__version_id=self.version.id) \
-            .values_list('content_id', 'libraryfolder_id', 'content__title', 'content__file_name',
+            .values_list('content_id', 'libraryfolder_id', 'content__display_title', 'content__file_name',
                          'content__filesize').distinct()
         db_util = LibraryDbUtil(metadata_types, metadata, folders, modules, contents, contents_metadata,
                                 contents_folder)

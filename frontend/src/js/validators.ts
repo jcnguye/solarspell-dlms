@@ -28,6 +28,15 @@ export default class VALIDATORS {
         }
         return ""
     }
+    static DISPLAY_TITLE(display_title_str: any): string {
+        if (display_title_str === "") {
+            return "Field Required"
+        }
+        if (display_title_str.length > 300) {
+            return "Title must be less than 300 characters"
+        }
+        return ""
+    }
     static DESCRIPTION(_description_str: any): string {
         return ""
     }

@@ -16,13 +16,14 @@ function url_with_params(urlstr: string, params:[string, any][]=[]) {
 function get_filters_arr(page?: number, size?: number, filters?: content_filters, exclude_if_in_version?: LibraryVersion): [string, any][] {
     const content_filter = filters || {}
     const {
-        title, years, filename, copyright_notes, active, metadata, sort, file_sizes, reviewed_on, duplicatable
+        title, display_title, years, filename, copyright_notes, active, metadata, sort, file_sizes, reviewed_on, duplicatable
     } = content_filter
     const filters_arr: [string, any][] = page !== undefined ?
         [["page", `${page}`], ["size", `${size}`]] :
         []
     
     if (!isUndefined(title) && title !== "") filters_arr.push(["title", title])
+    if (!isUndefined(display_title) && display_title !== "") filters_arr.push(["display_title", display_title])
     if (!isUndefined(years)) {
         if(years[0] !== null) filters_arr.push(["published_year_from", `${years[0]}`])
         if(years[1] !== null) filters_arr.push(["published_year_to", `${years[1]}`])

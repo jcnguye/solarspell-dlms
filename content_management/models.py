@@ -51,6 +51,7 @@ class Content(models.Model):
     filesize = models.FloatField(null=True, editable=True)
     file_name = models.CharField(max_length=500, null=True)
     title = models.CharField(max_length=300)
+    display_title = models.CharField(max_length=300, default="")
     description = models.TextField(null=True)
     modified_on = models.DateTimeField(default=datetime.now)
     metadata = models.ManyToManyField(Metadata, blank=True)

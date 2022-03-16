@@ -29,6 +29,7 @@ interface SerializedMetadata {
 
 type content_filters = {
     title?: string
+    display_title?: string
     years?: [number|null, number|null]
     file_sizes?: [number|null, number|null]
     reviewed_on?: [Date|null, Date|null]
@@ -46,6 +47,7 @@ interface SerializedContent {
     filesize: number
     content_file: string
     title: string
+    display_title: string
     description: string|null
     modified_on: string
     reviewed_on: string
@@ -286,6 +288,7 @@ type field_info<T> = {
 type content_fields = {
     content_file:       File|null
     title:              string
+    display_title:              string
     description:        string
     year:               string
     reviewed_on:        Date|null
@@ -299,6 +302,7 @@ type content_fields = {
 type active_search_option = "active" | "inactive" | "all"
 type search_state = {
     title: string
+    display_title: string
     copyright_notes: string
     years_from: number | null
     years_to: number | null

@@ -8,7 +8,7 @@ from rest_framework.validators import UniqueTogetherValidator
 class ContentSerializer(ModelSerializer):
     class Meta:
         model = Content
-        fields = ('id', 'file_name', 'content_file', 'title', 'description', 'modified_on', 'copyright_notes',
+        fields = ('id', 'file_name', 'content_file', 'title', 'display_title', 'description', 'modified_on', 'copyright_notes',
                   'rights_statement', 'published_date', 'active', 'metadata', 'additional_notes', 'metadata_info',
                   "published_year", "filesize", "reviewed_on", 'duplicatable')
 

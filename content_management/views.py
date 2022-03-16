@@ -83,7 +83,11 @@ class ContentViewSet(StandardDataView, viewsets.ModelViewSet):
         title = self.request.GET.get("title", None)
         if title != None:
             queryset = queryset.filter(title__icontains=title)
-        
+
+        display_title = self.request.GET.get("display_title", None)
+        if display_title != None:
+            queryset = queryset.filter(display_title__icontains=display_title)
+
         file_name = self.request.GET.get("file_name", None)
         if file_name != None:
             queryset = queryset.filter(file_name__icontains=file_name)
@@ -195,7 +199,7 @@ class ContentViewSet(StandardDataView, viewsets.ModelViewSet):
         worksheet = workbook.add_worksheet()
         
         content_fields = [
-            "title", "file_name", "description", "modified_on", "copyright_notes",
+            "title", "display_title", "file_name", "description", "modified_on", "copyright_notes",
             "rights_statement", "additional_notes", "published_date", "reviewed_on", "active",
             "duplicatable", "filesize"
         ]

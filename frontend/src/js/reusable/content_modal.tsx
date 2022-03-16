@@ -52,6 +52,7 @@ export default class ContentModal extends Component<ContentModalProps, ContentMo
         this.default_fields = {
             content_file: get_field_info_default<File|null>(null),
             title: get_field_info_default(""),
+            display_title: get_field_info_default(""),
             description: get_field_info_default(""),
             year: get_field_info_default(""),
             reviewed_on: get_field_info_default(null),
@@ -101,6 +102,8 @@ export default class ContentModal extends Component<ContentModalProps, ContentMo
                     row.additional_notes === null? "" : row.additional_notes)
                 draft.fields.title = get_field_info_default(
                     row.title === null ? "" : row.title)
+                draft.fields.display_title = get_field_info_default(
+                    row.display_title === null ? "" : row.display_title)
                 draft.fields.year = get_field_info_default(
                     row.published_year === null ? "" : row.published_year)
                 draft.fields.duplicatable = get_field_info_default(row.duplicatable)
@@ -171,6 +174,7 @@ export default class ContentModal extends Component<ContentModalProps, ContentMo
                                 }
 
                                 formData.append('title', this.state.fields.title.value)
+                                formData.append('display_title', this.state.fields.display_title.value)
                                 formData.append('description', this.state.fields.description.value)
                                 formData.append('duplicatable', this.state.fields.duplicatable.value ? "true" : "false")
                                 formData.append('rights_statement', this.state.fields.rights_statement.value)
@@ -248,6 +252,19 @@ export default class ContentModal extends Component<ContentModalProps, ContentMo
                                 evt.persist()
                                 this.update_state(draft => {
                                     draft.fields.title.value = evt.target.value
+                                })
+                            }}
+                        />,
+                        <TextField
+                            fullWidth
+                            error={this.state.fields.display_title.reason !== ""}
+                            helperText={this.state.fields.display_title.reason}
+                            label={"Display Title"}
+                            value={this.state.fields.display_title.value}
+                            onChange={(evt) => {
+                                evt.persist()
+                                this.update_state(draft => {
+                                    draft.fields.display_title.value = evt.target.value
                                 })
                             }}
                         />,

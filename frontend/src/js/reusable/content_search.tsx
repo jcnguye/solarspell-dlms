@@ -117,6 +117,19 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                             <Grid item xs={4}>
                                 <TextField
                                     fullWidth
+                                    label={"Display Title"}
+                                    value={contents_api.state.search.display_title}
+                                    onChange={(evt) => {
+                                        evt.persist()
+                                        contents_api.update_search_state(draft => {
+                                            draft.display_title = evt.target.value
+                                        })
+                                    }}
+                                />
+                            </Grid>
+                            <Grid item xs={4}>
+                                <TextField
+                                    fullWidth
                                     label={"Filename"}
                                     value={contents_api.state.search.file_name}
                                     onChange={(evt) => {
