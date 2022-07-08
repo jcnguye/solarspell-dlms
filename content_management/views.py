@@ -623,8 +623,14 @@ class LibraryBuildView(views.APIView):
         version_id = int(kwargs['version_id'])
         build_util = LibraryBuildUtil(version_id)
         result = build_util.build_library()
-        response = build_response(result)
-        return response
+        if result.get("result") is "success":
+            return build_response(result)
+        else:
+            return build_response(
+                status=status.HTTP_400_BAD_REQUEST,
+                success=False,
+                error=result.get("error")
+            )
 
 @api_view(('GET',))
 # @staff_member_required

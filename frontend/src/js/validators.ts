@@ -78,6 +78,9 @@ export default class VALIDATORS {
     static DELETE_IF_EQUALS<T>(input_str: T, to_delete: T) {
         return isEqual(input_str, to_delete) ? "" : `Input must equal ${to_delete}`
     }
+    static BUILD_IF_EQUAL<T>(input_str: T, to_delete: T) {
+        return isEqual(input_str, to_delete) ? "" : `Input must equal ${to_delete}`
+    }
     static VERSION_NAME(to_check: any) {
         if (!isString(to_check)) {
             return "Input must be a string"

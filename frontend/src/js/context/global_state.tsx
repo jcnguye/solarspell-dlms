@@ -189,6 +189,8 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         this.move_folder = this.handle_loader(this.move_folder.bind(this))
         this.update_folder_autocomplete = this.update_folder_autocomplete.bind(this)
         this.update_version_autocomplete = this.update_version_autocomplete.bind(this)
+        this.build_version = this.handle_loader(this.build_version.bind(this))
+
         
         //Users API
         this.refresh_users = this.handle_loader(this.refresh_users.bind(this))
@@ -820,6 +822,10 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             .then(this.refresh_library_versions)
     }
 
+    async build_version(version: LibraryVersion) {
+        return Axios.get(APP_URLS.LIBRARY_BUILD(version.id))
+    }
+
     async update_version(version: LibraryVersion, name?: string, number?: string, user?: User) {
         await Axios.patch(APP_URLS.LIBRARY_VERSION(version.id), {
             library_name: name,
@@ -1121,6 +1127,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                     move_folder: this.move_folder,
                     update_version_autocomplete: this.update_version_autocomplete,
                     update_folder_autocomplete: this.update_folder_autocomplete,
+                    build_version: this.build_version
                 },
                 metadata_api: {
                     state: this.state.metadata_api,

@@ -155,6 +155,7 @@ type LibraryVersionsAPI = {
     ) => Promise<any>
     update_version_autocomplete: (prefix: string) => Promise<any>
     update_folder_autocomplete: (version: LibraryVersion) => Promise<any>
+    build_version: (version: LibraryVersion) => Promise<any>
 }
 
 type UsersAPI = {

@@ -103,6 +103,8 @@ const APP_URLS = {
     LIBRARY_VERSIONS: (page: number, size: number) => url_with_params(
         `${api_path}/library_versions/`, [["page", page], ["size", size]]
     ),
+    LIBRARY_BUILD: (id: number) =>
+        url_with_params(`${api_path}/create_build/${id}/`),
     METADATA: url_with_params(`${api_path}/metadata/`),
     METADATA_ITEM: (id: number) => url_with_params(`${api_path}/metadata/${id}/`),
     METADATA_TYPE: (id: number) => url_with_params(`${api_path}/metadata_types/${id}/`),

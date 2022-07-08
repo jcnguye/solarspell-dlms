@@ -123,7 +123,10 @@ class MainScreen extends React.Component<MainScreenProps, MainScreenState> {
             "images": {
                 display_label: "SolarSPELL Images",
                 component: (_tabs, apis) => (
-                    <LibraryImages library_versions_api={apis.lib_versions_api}/>
+                    <LibraryImages
+                        library_versions_api={apis.lib_versions_api}
+                        show_toast_message={this.show_toast_message}
+                    />
                 ),
                 icon: solarspell_images
             },
