@@ -19,7 +19,8 @@ import solarspell_images from "../images/home_icons/solarspell_images.png"
 import library_assets from "../images/home_icons/library_assets.png"
 import library_modules from "../images/home_icons/library_modules.png"
 
-import { Snackbar, CircularProgress, Box} from '@material-ui/core';
+import {Snackbar, CircularProgress, Box} from '@material-ui/core';
+import {Close} from "@material-ui/icons"
 import { Alert } from '@material-ui/lab';
 import { update_state } from './utils';
 import { APIs, TabDict } from './types';
@@ -186,7 +187,7 @@ class MainScreen extends React.Component<MainScreenProps, MainScreenState> {
             draft.toast_state.is_open = true
             draft.toast_state.message = message
             draft.toast_state.is_success = is_success
-        }).then(() => setTimeout(this.close_toast, 5000))
+        })
     }
 
     change_tab(new_tab: string) {
@@ -246,10 +247,12 @@ class MainScreen extends React.Component<MainScreenProps, MainScreenState> {
                     
                     open={this.state.toast_state.is_open}
                     onClose={this.close_toast}
-                    autoHideDuration={6000}
                 >
                     <Alert severity={this.state.toast_state.is_success ? "success" : "error"}>
                         {this.state.toast_state.message}
+                        <Close
+                            onClick={this.close_toast}
+                          />
                     </Alert>
                 </Snackbar>
                 <Box
