@@ -48,7 +48,6 @@ interface LibrariesState {
     modals: LibrariesModals
     selected_folders: LibraryFolder[]
     selected_files: SerializedContent[]
-
 }
 
 interface LibrariesModals {

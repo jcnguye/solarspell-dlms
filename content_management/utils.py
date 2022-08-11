@@ -2,6 +2,7 @@ import datetime
 import json
 import os
 import shutil
+import time
 from pathlib import Path
 
 from django.core.exceptions import ValidationError
@@ -212,9 +213,16 @@ class LibraryBuildUtil:
         db_util = LibraryDbUtil(metadata_types, metadata, folders, modules, contents, contents_metadata,
                                 contents_folder)
         try:
-            self.create_asset_folder(folders.filter(parent_id=None), modules)
-            db_util.create_library_db(self.version)
-            self.copy_library_files(contents)
+            build_path = os.path.join(os.path.abspath(settings.BUILDS_ROOT), self.version.version_number)
+            if not os.path.isdir(build_path):
+                os.makedirs(build_path)
+            else:
+                build_path = build_path + "_" + str(int(time.time()))
+                os.makedirs(build_path)
+                print("Directory '% s' successfully created" % build_path)
+            self.create_asset_folder(folders.filter(parent_id=None), modules, build_path)
+            db_util.create_library_db(build_path)
+            self.copy_library_files(contents, build_path)
             print("success creating content folder")
             data = {
                 'result': 'success',
@@ -264,14 +272,14 @@ class LibraryBuildUtil:
         except Exception as e:
             raise e
 
-    def copy_library_files(self, files_list):
+    def copy_library_files(self, files_list, build_path):
         """
         This method copy the files of the library to be built into a separate folder to be exported
         :param files_list:
         :return: boolean value indicating success/failure of operation
         """
-        dir_path = os.path.join(os.path.abspath(settings.BUILDS_ROOT), self.version.version_number, "content/")
-        if not os.path.exists(dir_path):
+        dir_path = os.path.join(build_path, "content/")
+        if not os.path.isdir(dir_path):
             os.makedirs(dir_path)
         print("Directory '% s' successfully created" % dir_path)
         try:
@@ -283,17 +291,14 @@ class LibraryBuildUtil:
             print("file '% s' doesn't exist in content folder: " % src_dir)
             os.remove(dir_path)
 
-    def create_asset_folder(self, categories, modules):
+    def create_asset_folder(self, categories, modules, build_path):
         """
         This method creates the asset folder that contains the logos, banner image, and a json file that has information
          about the library version
         """
-        logos_path = os.path.join(os.path.abspath(settings.BUILDS_ROOT), self.version.version_number,
-                                  "assets/images/logos")
-        banners_path = os.path.join(os.path.abspath(settings.BUILDS_ROOT), self.version.version_number,
-                                    "assets/images/banners")
-        config_path = os.path.join(os.path.abspath(settings.BUILDS_ROOT), self.version.version_number,
-                                   "assets/config.json")
+        logos_path = os.path.join(build_path, "assets/images/logos")
+        banners_path = os.path.join(build_path, "assets/images/banners")
+        config_path = os.path.join(build_path, "assets/config.json")
         if not os.path.exists(logos_path):
             os.makedirs(logos_path)
         print("Directory '% s' successfully created" % logos_path)
@@ -313,9 +318,11 @@ class LibraryBuildUtil:
                 shutil.copy(src_dir, logos_path)
             src_dir = os.path.join(os.path.abspath(settings.MEDIA_ROOT), self.version.library_banner.image_file.path)
             shutil.copy(src_dir, banners_path)
+            # rename banner image to banner.png since since this is what the frontend looks for
+            os.rename(os.path.join(banners_path, os.path.basename(self.version.library_banner.image_file.path)),
+                      os.path.join(banners_path, "banner.png"))
             # create config.json
-            config = {"version": self.version.version_number,
-                      "banner": "assets/" + self.version.library_banner.image_file.path}
+            config = {"version": self.version.version_number}
             with open(config_path, 'w') as f:
                 json.dump(config, f)
             return True

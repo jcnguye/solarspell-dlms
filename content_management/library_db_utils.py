@@ -61,8 +61,8 @@ class LibraryDbUtil:
         except Error as e:
             raise Exception("error while inserting data into tables:" + str(e))
 
-    def create_library_db(self, version):
-        database = os.path.join(os.path.abspath(settings.BUILDS_ROOT), version.version_number, 'solarspell.db')
+    def create_library_db(self, build_path):
+        database = os.path.join(build_path, 'solarspell.db')
         sql_create_metadata_type_table = """CREATE TABLE IF NOT EXISTS metadata_type (
                                         id INTEGER PRIMARY KEY,
                                         type_name TEXT NOT NULL

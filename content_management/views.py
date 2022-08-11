@@ -623,7 +623,7 @@ class LibraryBuildView(views.APIView):
         version_id = int(kwargs['version_id'])
         build_util = LibraryBuildUtil(version_id)
         result = build_util.build_library()
-        if result.get("result") is "success":
+        if result.get("result") == "success":
             return build_response(result)
         else:
             return build_response(
