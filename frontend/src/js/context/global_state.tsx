@@ -524,7 +524,8 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             responses.forEach(([type_name, _, count]) => {
                 draft.metadata_api.page_by_type[type_name] = {
                     count: count,
-                    page: draft.metadata_api.page_by_type[type_name]?.page || 1
+                    page: draft.metadata_api.page_by_type[type_name]?.page || 1,
+                    page_size: draft.metadata_api.page_by_type[type_name]?.page_size || 10
                 }
             })
             //Add metadata_name to show_columns if it doesn't already exist
@@ -615,6 +616,16 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         document.cookie = `show_columns=${x.join(',')}`
     }
 
+    async set_metadata_page_size(size: number, type_name: string) {
+        return this.update_state(draft => {
+        //     draft.library_versions_api.library_versions_page_size = size
+        // }).then(this.refresh_library_versions)
+        //TODO: make sure this works
+            draft.metadata_api.page_by_type[type_name].page_size = size
+        })
+            .then(this.refresh_metadata)
+    }
+    
     async set_metadata_page(page: number, type_name: string) {
         return this.update_state(draft => {
             draft.metadata_api.page_by_type[type_name].page = page

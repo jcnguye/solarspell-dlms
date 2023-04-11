@@ -228,7 +228,7 @@ export default class Metadata extends Component<MetadataProps, MetadataState> {
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <DataGrid
-                            rows={this.props.metadata_api.state.autocomplete_metadata[metadata_type.name] || []}
+                            rows={this.props.metadata_api.state.metadata_by_type[metadata_type.name] || []}
                             columns={[
                                 { name: 'actions', title: 'Actions', getCellValue: (row: SerializedMetadata) => {
                                     return (
@@ -266,6 +266,10 @@ export default class Metadata extends Component<MetadataProps, MetadataState> {
                                 defaultPageSize={this.default_page_size}
                                 currentPage={this.props.metadata_api.state.page_by_type[metadata_type.name]?.page - 1}
                                 onCurrentPageChange={new_page => this.props.metadata_api.set_metadata_page(new_page + 1, metadata_type.name)}
+                                // pageSize={this.props.library_versions_api.state.library_versions_page_size}
+                                pageSize={this.props.metadata_api.state.page_by_type[metadata_type.name]?.page_size}
+                                // onPageSizeChange={this.props.library_versions_api.set_page_size}
+                                onPageSizeChange={new_page_size => this.props.metadata_api.set_metadata_page_size(new_page_size, metadata_type.name)}
                             />
                             <CustomPaging
                                 totalCount={this.props.metadata_api.state.page_by_type[metadata_type.name]?.count}

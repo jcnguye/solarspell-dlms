@@ -238,6 +238,7 @@ type MetadataProviderState = {
     page_by_type: { [metadata_type: string]: {
         count: number
         page: number
+        page_size: number
     }}
     metadata_types: SerializedMetadataType[]
     show_columns: show_metadata_column
