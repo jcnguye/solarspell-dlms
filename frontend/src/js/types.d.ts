@@ -77,6 +77,7 @@ type MetadataAPI = {
     delete_metadata: (meta_type: SerializedMetadata) => Promise<any>
     set_view_metadata_column: (update_func: (draft: show_metadata_column) => void) => Promise<any>
     set_metadata_page: (page: number, type_name: string) => Promise<any>
+    set_metadata_page_size: (size: number, type_name: string) => Promise<any>
     update_autocomplete: (meta_type: SerializedMetadataType, name: string) => Promise<any>
 }
 
@@ -238,6 +239,7 @@ type MetadataProviderState = {
     page_by_type: { [metadata_type: string]: {
         count: number
         page: number
+        page_size: number
     }}
     metadata_types: SerializedMetadataType[]
     show_columns: show_metadata_column
