@@ -228,7 +228,7 @@ export default class Metadata extends Component<MetadataProps, MetadataState> {
                     </ExpansionPanelSummary>
                     <ExpansionPanelDetails>
                         <DataGrid
-                            rows={this.props.metadata_api.state.metadata_by_type[metadata_type.name] || []}
+                            rows={this.props.metadata_api.state.autocomplete_metadata[metadata_type.name] || []}
                             columns={[
                                 { name: 'actions', title: 'Actions', getCellValue: (row: SerializedMetadata) => {
                                     return (
@@ -254,12 +254,20 @@ export default class Metadata extends Component<MetadataProps, MetadataState> {
                         >
                             <FilteringState
                                 columnExtensions={this.columnExtensions}
-                                onFiltersChange={filters => filters.map(
-                                    filter => this.props.metadata_api
-                                        .update_autocomplete(
-                                            metadata_type, filter.value || ""
+                                onFiltersChange={filters => {
+                                    console.log("filters", filters);
+                                    if (filters.length === 0) {
+                                        this.props.metadata_api.update_autocomplete(metadata_type, "")
+                                    }
+                                    else {
+                                        filters.map(
+                                            filter => this.props.metadata_api
+                                                .update_autocomplete(
+                                                    metadata_type, filter.value || ""
+                                                )
                                         )
-                                )}
+                                    }
+                                }}
                             />
                             <IntegratedFiltering />
                             <PagingState

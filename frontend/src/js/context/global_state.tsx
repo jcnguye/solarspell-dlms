@@ -637,7 +637,12 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
 
     async update_autocomplete(meta_type: SerializedMetadataType, name: string) {
         const data = await get_data(
-            APP_URLS.METADATA_BY_TYPE(meta_type.name, 1, name)
+            APP_URLS.METADATA_BY_TYPE(
+                meta_type.name, 
+                this.state.metadata_api.page_by_type[meta_type.name]?.page || 1, 
+                this.state.metadata_api.page_by_type[meta_type.name]?.page_size || 10, 
+                name
+            )
         )
         this.update_state(draft => {
             draft.metadata_api.autocomplete_metadata[meta_type.name] = data.results
