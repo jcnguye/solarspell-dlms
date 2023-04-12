@@ -151,6 +151,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         this.delete_metadata = this.handle_loader(this.delete_metadata.bind(this))
         this.set_view_metadata_column = this.set_view_metadata_column.bind(this)
         this.set_metadata_page = this.set_metadata_page.bind(this)
+        this.set_metadata_page_size = this.set_metadata_page_size.bind(this)
         this.update_autocomplete = this.update_autocomplete.bind(this)
 
         //Library Assets API
@@ -507,7 +508,8 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             metadata_types.map(
                 type => get_data(APP_URLS.METADATA_BY_TYPE(
                     type.name,
-                    this.state.metadata_api.page_by_type[type.name]?.page || 1
+                    this.state.metadata_api.page_by_type[type.name]?.page || 1,
+                    this.state.metadata_api.page_by_type[type.name]?.page_size || 10
                 ))
                     .then(data => [type.name, data.results, data.count])
             )
@@ -1151,6 +1153,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                     refresh_metadata: this.refresh_metadata,
                     set_view_metadata_column: this.set_view_metadata_column,
                     set_metadata_page: this.set_metadata_page,
+                    set_metadata_page_size: this.set_metadata_page_size,
                     update_autocomplete: this.update_autocomplete
                 },
                 users_api: {
