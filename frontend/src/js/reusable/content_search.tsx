@@ -75,6 +75,7 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                 />
             )},
             {name: "title", title: "Title"},
+            {name: "modified_on", title: "Modified On"},
             {name: "description", title: "Description"},
             {name: "published_year", title: "Year of Publication"},
             {name: "file_name", title: "File Name"}
@@ -338,7 +339,7 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                             return {
                                 columnName: column.name,
                                 sortingEnabled: [
-                                    "file_name", "title",  "description",
+                                    "file_name", "title", "modified_on", "description",
                                     "published_year"
                                 ].includes(column.name)
                             }
