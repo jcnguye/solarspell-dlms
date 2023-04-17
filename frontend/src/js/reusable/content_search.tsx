@@ -21,6 +21,7 @@ import { ExpansionPanel, ExpansionPanelSummary, Typography, Grid, ExpansionPanel
 import { update_state } from '../utils'
 import { KeyboardDatePicker } from '@material-ui/pickers'
 import { Autocomplete } from '@material-ui/lab'
+import moment from "moment"
 
 
 interface ContentSearchProps {
@@ -328,8 +329,16 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                                 }
                             })
                     )}
-                    getCellValue={(row, col_name) => col_name == "filesize" ?
-                        prettyByte(row["filesize"]) : row[col_name]}
+                    getCellValue={(row, col_name) => {
+                        if (col_name == "filesize") {
+                            return prettyByte(row["filesize"])
+                        } else if (col_name == "modified_on") {
+                            return moment(row["modified_on"]).format("M/D/YY h:mm a")
+                        } else {
+                            return row[col_name]
+                        }
+                            
+                    }}
                     rows={contents_api.state.display_rows}
                 >
                     <SortingState
