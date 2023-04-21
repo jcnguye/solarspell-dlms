@@ -625,7 +625,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                                                 const path = this.props.library_versions_api.state.path
                                                                 this.props.library_versions_api.remove_content_from_folder(
                                                                     path[path.length -1], this.state.selected_files
-                                                                )
+                                                                ).then(this.reset_selection)
                                                             },
                                                             "Remove Selected"
                                                         ],
@@ -1200,13 +1200,15 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                             key={1}
                             onClick={()=> {
                                 const path = this.props.library_versions_api.state.path
+                                console.log("path: ", path[path.length - 1]);
+                                console.log("selected: ", this.state.selected_files);
                                 this.props.library_versions_api.remove_content_from_folder(
                                     path[path.length - 1],
                                     this.state.selected_files
                                 ).then(() => this.props.library_versions_api.add_content_to_folder(
                                     this.state.modals.move_content.destination_folder[0],
                                     this.state.selected_files
-                                )).then(this.close_modals)
+                                )).then(() => this.reset_selection()).then(this.close_modals)
                             }}
                             color="secondary"
                         >
