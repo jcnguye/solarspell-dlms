@@ -74,12 +74,12 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                     addFn={on_add === undefined ? undefined : () => on_add(display_row)}
                 />
             )},
-            {name: "deactivate", title: "Deactivate", getCellValue: (display_row: any) => (
-                <ActionPanel
-                    row={display_row}
-                    setActive={on_toggle_active === undefined ? undefined : () => on_toggle_active(display_row)}
-                />
-            )},
+            // {name: "deactivate", title: "Deactivate", getCellValue: (display_row: any) => (
+            //     <ActionPanel
+            //         row={display_row}
+            //         setActive={on_toggle_active === undefined ? undefined : () => on_toggle_active(display_row)}
+            //     />
+            // )},
             {name: "title", title: "Title"},
             {name: "description", title: "Description"},
             {name: "published_year", title: "Year of Publication"},
@@ -390,7 +390,7 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                     />
                     <IntegratedSelection />
                     <CustomPaging totalCount={this.props.contents_api.state.total_count}/>
-                    <Table />
+                    <Table columnExtensions={[{columnName: 'actions', width: 100}]}/>
                     <TableHeaderRow showSortingControls />
                     <TableSelection showSelectAll />
                     <PagingPanel pageSizes={this.props.contents_api.state.page_sizes} />
