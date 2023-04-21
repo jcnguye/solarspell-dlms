@@ -17,7 +17,7 @@ import {
     Column,
     SelectionState, IntegratedSelection 
 } from "@devexpress/dx-react-grid"
-import { ExpansionPanel, ExpansionPanelSummary, Typography, Grid, ExpansionPanelDetails, TextField, Container, Select, MenuItem, } from '@material-ui/core'
+import { ExpansionPanel, ExpansionPanelSummary, Typography, Grid, ExpansionPanelDetails, TextField, Container, Select, MenuItem, InputLabel, FormControl, } from '@material-ui/core'
 import { update_state } from '../utils'
 import { KeyboardDatePicker } from '@material-ui/pickers'
 import { Autocomplete } from '@material-ui/lab'
@@ -252,7 +252,11 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                             <Grid item xs={12}>
                                 <Container disableGutters style={{display: "flex", height: "100%"}}>
                                     {!this.props.versions_api ? 
+                                        <FormControl>
+
+                                        <InputLabel id="Active_id" style={{alignSelf: "center"}}>Active</InputLabel>
                                         <Select
+                                            labelId="Active_id"
                                             style={{alignSelf: "bottom"}}
                                             label={"Active"}
                                             value={contents_api.state.search.active}
@@ -265,22 +269,26 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                                             <MenuItem value={"all"}>All</MenuItem>
                                             <MenuItem value={"active"}>Active</MenuItem>
                                             <MenuItem value={"inactive"}>Inactive</MenuItem>
-                                        </Select> : <></>
+                                        </Select></FormControl> : <></>
                                     }
-                                    <Select
-                                        style={{alignSelf: "bottom"}}
-                                        label={"Duplicatable"}
-                                        value={contents_api.state.search.duplicatable}
-                                        onChange={(event) => {
-                                            contents_api.update_search_state(draft => {
-                                                draft.duplicatable = event.target.value as "yes" | "no" | "all"
-                                            })
-                                        }}
-                                    >
-                                        <MenuItem value={"all"}>All</MenuItem>
-                                        <MenuItem value={"yes"}>Duplicatable</MenuItem>
-                                        <MenuItem value={"no"}>Non-Duplicatable</MenuItem>
-                                    </Select>
+                                    <FormControl style={{marginLeft: "1em"}}>
+                                        <InputLabel id="Duplicatable_id" style={{alignSelf: "center"}}>Duplicatable</InputLabel>
+                                        <Select
+                                            labelId="Duplicatable_id"
+                                            style={{alignSelf: "bottom"}}
+                                            label={"Duplicatable"}
+                                            value={contents_api.state.search.duplicatable}
+                                            onChange={(event) => {
+                                                contents_api.update_search_state(draft => {
+                                                    draft.duplicatable = event.target.value as "yes" | "no" | "all"
+                                                })
+                                            }}
+                                        >
+                                            <MenuItem value={"all"}>All</MenuItem>
+                                            <MenuItem value={"yes"}>Duplicatable</MenuItem>
+                                            <MenuItem value={"no"}>Non-Duplicatable</MenuItem>
+                                        </Select>
+                                    </FormControl>
                                 </Container>
                             </Grid>
                             {metadata_api.state.metadata_types.map((metadata_type, idx) => {
