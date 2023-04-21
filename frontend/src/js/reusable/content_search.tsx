@@ -71,8 +71,13 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                     row={display_row}
                     editFn={on_edit === undefined ? undefined : () => on_edit(display_row)}
                     viewFn={on_view === undefined ? undefined : () => on_view(display_row)}
-                    setActive={on_toggle_active === undefined ? undefined : () => on_toggle_active(display_row)}
                     addFn={on_add === undefined ? undefined : () => on_add(display_row)}
+                />
+            )},
+            {name: "deactivate", title: "Deactivate", getCellValue: (display_row: any) => (
+                <ActionPanel
+                    row={display_row}
+                    setActive={on_toggle_active === undefined ? undefined : () => on_toggle_active(display_row)}
                 />
             )},
             {name: "title", title: "Title"},
