@@ -119,6 +119,9 @@ interface LibrariesModals {
         destination_library: LibraryVersion
         destination_library_input: string
     }
+    column_select: {
+        is_open: boolean
+    }
 }
 
 export default class Libraries extends React.Component<LibrariesProps, LibrariesState> {
@@ -256,6 +259,9 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                     id: 0, library_name: "None Selected", version_number: "None"
                 } as any,
                 destination_library_input: "",
+            },
+            column_select: {
+                is_open: false
             }
         }
 
@@ -689,6 +695,24 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                 color: "#FFFFFF"
                             }}
                         >Add Selected to CD</Button>
+                        <Button
+                            onClick={_ => {
+                                this.update_state(draft => {
+                                    draft.modals.column_select.is_open = true
+                                })
+                            }}
+                            style={{
+                                marginLeft: "1em",
+                                marginBottom: "1em",
+                                float: "right",
+                                marginRight: "1em",
+                                //backgroundColor: "#75b2dd",
+                                //color: "#FFFFFF"
+                            }}
+                            variant="outlined"
+                        >
+                            Column Select
+                        </Button>
                         <ContentSearch
                             contents_api={this.props.contents_api}
                             metadata_api={this.props.metadata_api}
@@ -1446,6 +1470,59 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                             placeholder="Destination Folder"
                         />}
                     />}
+                </ActionDialog>
+                <ActionDialog
+                    open={this.state.modals.column_select.is_open}
+                    title="Show Metadata Columns"
+                    get_actions={focus_ref => [(
+                        <Button
+                            key={2}
+                            onClick={() => {
+                                this.update_state(draft => {
+                                    draft.modals.column_select.is_open = false
+                                })
+                            }}
+                            color="primary"
+                            ref={focus_ref}
+                        >
+                            Close
+                        </Button>
+                    )]}
+                >
+                    {["filesize", "content_file", "rights_statement", "description", "modified_on", "reviewed_on", "copyright_notes", "published_year", "duplicatable"].map((name, idx) => {
+                        return <Box flexDirection="row" display="flex" key={idx}>
+                            <Box key={0}>
+                                <Checkbox
+                                    checked={this.props.metadata_api.state.show_columns[name]}
+                                    onChange={(_, checked) => {
+                                        this.props.metadata_api.set_view_metadata_column(draft => {
+                                            draft[name] = checked
+                                        })
+                                    }}
+                                />
+                            </Box>
+                            <Box key={1}>
+                                <Typography>{name}</Typography>
+                            </Box>
+                        </Box>
+                    })}
+                    {this.props.metadata_api.state.metadata_types.map((metadata_type, idx) => {
+                        return <Box flexDirection="row" display="flex" key={idx + 999}>
+                            <Box key={0}>
+                                <Checkbox
+                                    checked={this.props.metadata_api.state.show_columns[metadata_type.name]}
+                                    onChange={(_, checked) => {
+                                        this.props.metadata_api.set_view_metadata_column(draft => {
+                                            draft[metadata_type.name] = checked
+                                        })
+                                    }}
+                                />
+                            </Box>
+                            <Box key={1}>
+                                <Typography>{metadata_type.name}</Typography>
+                            </Box>
+                        </Box>
+                    })}
                 </ActionDialog>
             </>
         )
