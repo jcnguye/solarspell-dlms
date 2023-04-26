@@ -299,6 +299,7 @@ type content_fields = {
     copyright_notes:    string
     rights_statement:   string
     duplicatable:       boolean
+    active:             boolean
     additional_notes:   string
 }
 

@@ -256,18 +256,6 @@ export default class Content extends Component<ContentProps, ContentState> {
                             draft.modals.view.row = row
                         })
                     }}
-                    on_toggle_active={row => {
-                        this.props.show_toast_message(`Setting Active to ${!row.active}`, true)
-                        Axios.patch(APP_URLS.CONTENT_ITEM(row.id), {
-                            active: !row.active
-                        }).then(
-                            () => {
-                                this.props.show_toast_message(`Active Set to ${!row.active}`, true)
-                                return this.props.contents_api.load_content_rows()
-                            },
-                            () => this.props.show_toast_message("Active Toggle Failed", false)
-                        )
-                    }}
                 />
                 <ActionDialog
                     title={`Delete ${this.props.contents_api.state.selection.length} Content Item(s)?`}
@@ -344,7 +332,8 @@ export default class Content extends Component<ContentProps, ContentState> {
                         copyright_notes: VALIDATORS.COPYRIGHT_NOTES,
                         rights_statement: VALIDATORS.RIGHTS_STATEMENT,
                         additional_notes: VALIDATORS.ADDITIONAL_NOTES,
-                        duplicatable: () => ""
+                        duplicatable: () => "",
+                        active: () => ""
                     }}
                     show_toast_message={this.props.show_toast_message}
                     show_loader={this.props.show_loader}
@@ -372,7 +361,8 @@ export default class Content extends Component<ContentProps, ContentState> {
                         copyright_notes: VALIDATORS.COPYRIGHT_NOTES,
                         rights_statement: VALIDATORS.RIGHTS_STATEMENT,
                         additional_notes: VALIDATORS.ADDITIONAL_NOTES,
-                        duplicatable: () => ""
+                        duplicatable: () => "",
+                        active: () => ""
                     }}
                     show_toast_message={this.props.show_toast_message}
                     show_loader={this.props.show_loader}

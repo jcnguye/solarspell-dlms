@@ -71,7 +71,6 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                     row={display_row}
                     editFn={on_edit === undefined ? undefined : () => on_edit(display_row)}
                     viewFn={on_view === undefined ? undefined : () => on_view(display_row)}
-                    setActive={on_toggle_active === undefined ? undefined : () => on_toggle_active(display_row)}
                     addFn={on_add === undefined ? undefined : () => on_add(display_row)}
                 />
             )},
@@ -385,7 +384,7 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                     />
                     <IntegratedSelection />
                     <CustomPaging totalCount={this.props.contents_api.state.total_count}/>
-                    <Table />
+                    <Table columnExtensions={[{columnName: 'actions', width: 100}]}/>
                     <TableHeaderRow showSortingControls />
                     <TableSelection showSelectAll />
                     <PagingPanel pageSizes={this.props.contents_api.state.page_sizes} />
