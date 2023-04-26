@@ -17,10 +17,11 @@ import {
     Column,
     SelectionState, IntegratedSelection 
 } from "@devexpress/dx-react-grid"
-import { ExpansionPanel, ExpansionPanelSummary, Typography, Grid, ExpansionPanelDetails, TextField, Container, Select, MenuItem, } from '@material-ui/core'
+import { ExpansionPanel, ExpansionPanelSummary, Typography, Grid, ExpansionPanelDetails, TextField, Container, Select, MenuItem, InputLabel, FormControl, } from '@material-ui/core'
 import { update_state } from '../utils'
 import { KeyboardDatePicker } from '@material-ui/pickers'
 import { Autocomplete } from '@material-ui/lab'
+import moment from "moment"
 
 
 interface ContentSearchProps {
@@ -70,7 +71,6 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                     row={display_row}
                     editFn={on_edit === undefined ? undefined : () => on_edit(display_row)}
                     viewFn={on_view === undefined ? undefined : () => on_view(display_row)}
-                    setActive={on_toggle_active === undefined ? undefined : () => on_toggle_active(display_row)}
                     addFn={on_add === undefined ? undefined : () => on_add(display_row)}
                 />
             )},
@@ -250,7 +250,11 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                             <Grid item xs={12}>
                                 <Container disableGutters style={{display: "flex", height: "100%"}}>
                                     {!this.props.versions_api ? 
+                                        <FormControl>
+
+                                        <InputLabel id="Active_id" style={{alignSelf: "center"}}>Active</InputLabel>
                                         <Select
+                                            labelId="Active_id"
                                             style={{alignSelf: "bottom"}}
                                             label={"Active"}
                                             value={contents_api.state.search.active}
@@ -263,22 +267,26 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                                             <MenuItem value={"all"}>All</MenuItem>
                                             <MenuItem value={"active"}>Active</MenuItem>
                                             <MenuItem value={"inactive"}>Inactive</MenuItem>
-                                        </Select> : <></>
+                                        </Select></FormControl> : <></>
                                     }
-                                    <Select
-                                        style={{alignSelf: "bottom"}}
-                                        label={"Duplicatable"}
-                                        value={contents_api.state.search.duplicatable}
-                                        onChange={(event) => {
-                                            contents_api.update_search_state(draft => {
-                                                draft.duplicatable = event.target.value as "yes" | "no" | "all"
-                                            })
-                                        }}
-                                    >
-                                        <MenuItem value={"all"}>All</MenuItem>
-                                        <MenuItem value={"yes"}>Duplicatable</MenuItem>
-                                        <MenuItem value={"no"}>Non-Duplicatable</MenuItem>
-                                    </Select>
+                                    <FormControl style={{marginLeft: "1em"}}>
+                                        <InputLabel id="Duplicatable_id" style={{alignSelf: "center"}}>Duplicatable</InputLabel>
+                                        <Select
+                                            labelId="Duplicatable_id"
+                                            style={{alignSelf: "bottom"}}
+                                            label={"Duplicatable"}
+                                            value={contents_api.state.search.duplicatable}
+                                            onChange={(event) => {
+                                                contents_api.update_search_state(draft => {
+                                                    draft.duplicatable = event.target.value as "yes" | "no" | "all"
+                                                })
+                                            }}
+                                        >
+                                            <MenuItem value={"all"}>All</MenuItem>
+                                            <MenuItem value={"yes"}>Duplicatable</MenuItem>
+                                            <MenuItem value={"no"}>Non-Duplicatable</MenuItem>
+                                        </Select>
+                                    </FormControl>
                                 </Container>
                             </Grid>
                             {metadata_api.state.metadata_types.map((metadata_type, idx) => {
@@ -327,8 +335,16 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                                 }
                             })
                     )}
-                    getCellValue={(row, col_name) => col_name == "filesize" ?
-                        prettyByte(row["filesize"]) : row[col_name]}
+                    getCellValue={(row, col_name) => {
+                        if (col_name == "filesize") {
+                            return prettyByte(row["filesize"])
+                        } else if (col_name == "modified_on" || col_name == "reviewed_on") {
+                            return moment(row[col_name]).format("M/D/YY h:mm a")
+                        } else {
+                            return row[col_name]
+                        }
+                            
+                    }}
                     rows={contents_api.state.display_rows}
                 >
                     <SortingState
@@ -338,7 +354,7 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                             return {
                                 columnName: column.name,
                                 sortingEnabled: [
-                                    "file_name", "title",  "description",
+                                    "file_name", "title", "modified_on", "description",
                                     "published_year"
                                 ].includes(column.name)
                             }
@@ -368,7 +384,7 @@ export default class ContentSearch extends Component<ContentSearchProps, Content
                     />
                     <IntegratedSelection />
                     <CustomPaging totalCount={this.props.contents_api.state.total_count}/>
-                    <Table />
+                    <Table columnExtensions={[{columnName: 'actions', width: 100}]}/>
                     <TableHeaderRow showSortingControls />
                     <TableSelection showSelectAll />
                     <PagingPanel pageSizes={this.props.contents_api.state.page_sizes} />

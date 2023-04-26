@@ -63,7 +63,19 @@ class ContentSheetUtil:
                                     content.published_date = None
                             content.modified_on = timezone.now()
                             content.additional_notes = each_content.get("Additional Notes")
-                            content.active = True
+
+                            active = each_content.get("Active").lower()
+                            if active == "true" or active == "yes":
+                                content.active = True
+                            else:
+                                content.active = False
+
+                            duplicatable = each_content.get("Duplicatable").lower()
+                            if duplicatable == "true" or duplicatable == "yes":
+                                content.duplicatable = True
+                            else:
+                                content.duplicatable = False
+
                             content.filesize = os.stat(file_path).st_size
                             try:
                                 content.save()
@@ -115,7 +127,19 @@ class ContentSheetUtil:
                                     content.published_date = None
                             content.modified_on = timezone.now()
                             content.additional_notes = each_content.get("Additional Notes")
-                            content.active = True
+
+                            active = each_content.get("Active").lower()
+                            if active == "true" or active == "yes":
+                                content.active = True
+                            else:
+                                content.active = False
+
+                            duplicatable = each_content.get("Duplicatable").lower()
+                            if duplicatable == "true" or duplicatable == "yes":
+                                content.duplicatable = True
+                            else:
+                                content.duplicatable = False
+
                             try:
                                 content.save()
                             except Exception as e:

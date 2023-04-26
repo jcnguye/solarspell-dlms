@@ -254,18 +254,30 @@ export default class Metadata extends Component<MetadataProps, MetadataState> {
                         >
                             <FilteringState
                                 columnExtensions={this.columnExtensions}
-                                onFiltersChange={filters => filters.map(
-                                    filter => this.props.metadata_api
-                                        .update_autocomplete(
-                                            metadata_type, filter.value || ""
+                                onFiltersChange={filters => {
+                                    console.log("filters", filters);
+                                    if (filters.length === 0) {
+                                        this.props.metadata_api.update_autocomplete(metadata_type, "")
+                                    }
+                                    else {
+                                        filters.map(
+                                            filter => this.props.metadata_api
+                                                .update_autocomplete(
+                                                    metadata_type, filter.value || ""
+                                                )
                                         )
-                                )}
+                                    }
+                                }}
                             />
                             <IntegratedFiltering />
                             <PagingState
                                 defaultPageSize={this.default_page_size}
                                 currentPage={this.props.metadata_api.state.page_by_type[metadata_type.name]?.page - 1}
                                 onCurrentPageChange={new_page => this.props.metadata_api.set_metadata_page(new_page + 1, metadata_type.name)}
+                                // pageSize={this.props.library_versions_api.state.library_versions_page_size}
+                                pageSize={this.props.metadata_api.state.page_by_type[metadata_type.name]?.page_size}
+                                // onPageSizeChange={this.props.library_versions_api.set_page_size}
+                                onPageSizeChange={new_page_size => this.props.metadata_api.set_metadata_page_size(new_page_size, metadata_type.name)}
                             />
                             <CustomPaging
                                 totalCount={this.props.metadata_api.state.page_by_type[metadata_type.name]?.count}

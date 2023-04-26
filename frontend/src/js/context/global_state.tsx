@@ -151,6 +151,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         this.delete_metadata = this.handle_loader(this.delete_metadata.bind(this))
         this.set_view_metadata_column = this.set_view_metadata_column.bind(this)
         this.set_metadata_page = this.set_metadata_page.bind(this)
+        this.set_metadata_page_size = this.set_metadata_page_size.bind(this)
         this.update_autocomplete = this.update_autocomplete.bind(this)
 
         //Library Assets API
@@ -507,7 +508,8 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             metadata_types.map(
                 type => get_data(APP_URLS.METADATA_BY_TYPE(
                     type.name,
-                    this.state.metadata_api.page_by_type[type.name]?.page || 1
+                    this.state.metadata_api.page_by_type[type.name]?.page || 1,
+                    this.state.metadata_api.page_by_type[type.name]?.page_size || 10
                 ))
                     .then(data => [type.name, data.results, data.count])
             )
@@ -524,7 +526,8 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             responses.forEach(([type_name, _, count]) => {
                 draft.metadata_api.page_by_type[type_name] = {
                     count: count,
-                    page: draft.metadata_api.page_by_type[type_name]?.page || 1
+                    page: draft.metadata_api.page_by_type[type_name]?.page || 1,
+                    page_size: draft.metadata_api.page_by_type[type_name]?.page_size || 10
                 }
             })
             //Add metadata_name to show_columns if it doesn't already exist
@@ -615,6 +618,16 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         document.cookie = `show_columns=${x.join(',')}`
     }
 
+    async set_metadata_page_size(size: number, type_name: string) {
+        return this.update_state(draft => {
+        //     draft.library_versions_api.library_versions_page_size = size
+        // }).then(this.refresh_library_versions)
+        //TODO: make sure this works
+            draft.metadata_api.page_by_type[type_name].page_size = size
+        })
+            .then(this.refresh_metadata)
+    }
+    
     async set_metadata_page(page: number, type_name: string) {
         return this.update_state(draft => {
             draft.metadata_api.page_by_type[type_name].page = page
@@ -624,7 +637,12 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
 
     async update_autocomplete(meta_type: SerializedMetadataType, name: string) {
         const data = await get_data(
-            APP_URLS.METADATA_BY_TYPE(meta_type.name, 1, name)
+            APP_URLS.METADATA_BY_TYPE(
+                meta_type.name, 
+                this.state.metadata_api.page_by_type[meta_type.name]?.page || 1, 
+                this.state.metadata_api.page_by_type[meta_type.name]?.page_size || 10, 
+                name
+            )
         )
         this.update_state(draft => {
             draft.metadata_api.autocomplete_metadata[meta_type.name] = data.results
@@ -1140,6 +1158,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                     refresh_metadata: this.refresh_metadata,
                     set_view_metadata_column: this.set_view_metadata_column,
                     set_metadata_page: this.set_metadata_page,
+                    set_metadata_page_size: this.set_metadata_page_size,
                     update_autocomplete: this.update_autocomplete
                 },
                 users_api: {
