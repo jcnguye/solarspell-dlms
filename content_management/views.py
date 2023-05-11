@@ -206,7 +206,7 @@ class ContentViewSet(StandardDataView, viewsets.ModelViewSet):
 
         field_display_names = [
             "Title", "Display Title", "File Name", "Description", "Modified On", "Copyright Notes",
-            "Rights Statement", "Additional Notes", "Published Date", "Reviewed On", "Active",
+            "Rights Statement", "Additional Notes", "Year Published", "Reviewed On", "Active",
             "Duplicatable", "Filesize"
         ]
 

@@ -63,18 +63,28 @@ class ContentSheetUtil:
                                     content.published_date = None
                             content.modified_on = timezone.now()
                             content.additional_notes = each_content.get("Additional Notes")
+                            
+                            active = each_content.get("Active")
+                            if active:
+                                if type(active) == bool:
+                                    content.active = active
+                                elif active.hasattr("lower"):
+                                    active = active.lower()
+                                    if active == "true" or active == "yes":
+                                        content.active = True
+                                    else:
+                                        content.active = False
 
-                            active = each_content.get("Active").lower()
-                            if active == "true" or active == "yes":
-                                content.active = True
-                            else:
-                                content.active = False
-
-                            duplicatable = each_content.get("Duplicatable").lower()
-                            if duplicatable == "true" or duplicatable == "yes":
-                                content.duplicatable = True
-                            else:
-                                content.duplicatable = False
+                            duplicatable = each_content.get("Duplicatable")
+                            if duplicatable:
+                                if type(duplicatable) == bool:
+                                    content.duplicatable = duplicatable
+                                elif duplicatable.hasattr("lower"):
+                                    duplicatable = duplicatable.lower()
+                                    if duplicatable == "true" or duplicatable == "yes":
+                                        content.duplicatable = True
+                                    else:
+                                        content.duplicatable = False
 
                             content.filesize = os.stat(file_path).st_size
                             try:
