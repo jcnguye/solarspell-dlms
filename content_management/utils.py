@@ -63,18 +63,27 @@ class ContentSheetUtil:
                                     content.published_date = None
                             content.modified_on = timezone.now()
                             content.additional_notes = each_content.get("Additional Notes")
-
-                            active = each_content.get("Active").lower()
-                            if active == "true" or active == "yes":
-                                content.active = True
-                            else:
-                                content.active = False
-
-                            duplicatable = each_content.get("Duplicatable").lower()
-                            if duplicatable == "true" or duplicatable == "yes":
-                                content.duplicatable = True
-                            else:
-                                content.duplicatable = False
+                            
+                            active = each_content.get("Active")
+                            if active:
+                                if type(active) == bool:
+                                    content.active = active
+                                elif active.hasattr("lower"):
+                                    active = active.lower()
+                                    if active == "true" or active == "yes":
+                                        content.active = True
+                                    else:
+                                        content.active = False
+                            duplicatable = each_content.get("Duplicatable")
+                            if duplicatable:
+                                if type(duplicatable) == bool:
+                                    content.duplicatable = duplicatable
+                                elif duplicatable.hasattr("lower"):
+                                    duplicatable = duplicatable.lower()
+                                    if duplicatable == "true" or duplicatable == "yes":
+                                        content.duplicatable = True
+                                    else:
+                                        content.duplicatable = False
 
                             content.filesize = os.stat(file_path).st_size
                             try:
@@ -106,6 +115,7 @@ class ContentSheetUtil:
                 for each_content in content_data:
                     # if title is not found, don't upload its metadata
                     content = Content.objects.filter(title=each_content.get("Title")).first()
+                    print(content)
                     if content is None:
                         unsuccessful_uploads.append({'file_name': each_content.get("Title"),
                                                      'error': 'content does not exist'})
@@ -128,17 +138,26 @@ class ContentSheetUtil:
                             content.modified_on = timezone.now()
                             content.additional_notes = each_content.get("Additional Notes")
 
-                            active = each_content.get("Active").lower()
-                            if active == "true" or active == "yes":
-                                content.active = True
-                            else:
-                                content.active = False
-
-                            duplicatable = each_content.get("Duplicatable").lower()
-                            if duplicatable == "true" or duplicatable == "yes":
-                                content.duplicatable = True
-                            else:
-                                content.duplicatable = False
+                            active = each_content.get("Active")
+                            if active:
+                                if type(active) == bool:
+                                    content.active = active
+                                elif active.hasattr("lower"):
+                                    active = active.lower()
+                                    if active == "true" or active == "yes":
+                                        content.active = True
+                                    else:
+                                        content.active = False
+                            duplicatable = each_content.get("Duplicatable")
+                            if duplicatable:
+                                if type(duplicatable) == bool:
+                                    content.duplicatable = duplicatable
+                                elif duplicatable.hasattr("lower"):
+                                    duplicatable = duplicatable.lower()
+                                    if duplicatable == "true" or duplicatable == "yes":
+                                        content.duplicatable = True
+                                    else:
+                                        content.duplicatable = False
 
                             try:
                                 content.save()
