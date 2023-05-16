@@ -68,7 +68,7 @@ class ContentSheetUtil:
                             if active:
                                 if type(active) == bool:
                                     content.active = active
-                                elif active.hasattr("lower"):
+                                elif hasattr(active, "lower"):
                                     active = active.lower()
                                     if active == "true" or active == "yes":
                                         content.active = True
@@ -78,7 +78,7 @@ class ContentSheetUtil:
                             if duplicatable:
                                 if type(duplicatable) == bool:
                                     content.duplicatable = duplicatable
-                                elif duplicatable.hasattr("lower"):
+                                elif hasattr(duplicatable, "lower"):
                                     duplicatable = duplicatable.lower()
                                     if duplicatable == "true" or duplicatable == "yes":
                                         content.duplicatable = True
@@ -142,7 +142,7 @@ class ContentSheetUtil:
                             if active:
                                 if type(active) == bool:
                                     content.active = active
-                                elif active.hasattr("lower"):
+                                elif hasattr(active, "lower"):
                                     active = active.lower()
                                     if active == "true" or active == "yes":
                                         content.active = True
@@ -152,7 +152,7 @@ class ContentSheetUtil:
                             if duplicatable:
                                 if type(duplicatable) == bool:
                                     content.duplicatable = duplicatable
-                                elif duplicatable.hasattr("lower"):
+                                elif hasattr(duplicatable, "lower"):
                                     duplicatable = duplicatable.lower()
                                     if duplicatable == "true" or duplicatable == "yes":
                                         content.duplicatable = True
