@@ -5,7 +5,7 @@ import shutil
 import time
 from pathlib import Path
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, MultipleObjectsReturned
 from django.core.files import File
 from django.utils import timezone
 from django.utils.text import get_valid_filename
@@ -98,9 +98,13 @@ class ContentSheetUtil:
                             try:
                                 metadata = self.get_associated_meta(each_content)
                                 for metadata_item in metadata:
-                                    obj, created = Metadata.objects.get_or_create(defaults={'name': metadata_item.name},
-                                                                                  name__iexact=metadata_item.name,
-                                                                                  type_id=metadata_item.type.id)
+                                    try:
+                                        obj, created = Metadata.objects.get_or_create(defaults={'name': metadata_item.name},
+                                                                                      name__iexact=metadata_item.name,
+                                                                                      type_id=metadata_item.type.id)
+                                    except MultipleObjectsReturned:
+                                        obj = Metadata.objects.filter(name__iexact=metadata_item.name, type_id=metadata_item.type.id)[0]
+
                                     content.metadata.add(obj)
                                 content.save()
                                 successful_uploads_count = successful_uploads_count + 1
@@ -168,9 +172,12 @@ class ContentSheetUtil:
                                 content.metadata.clear()
                                 metadata = self.get_associated_meta(each_content)
                                 for metadata_item in metadata:
-                                    obj, created = Metadata.objects.get_or_create(defaults={'name': metadata_item.name},
-                                                                                  name__iexact=metadata_item.name,
-                                                                                  type_id=metadata_item.type.id)
+                                    try:
+                                        obj, created = Metadata.objects.get_or_create(defaults={'name': metadata_item.name},
+                                                                                      name__iexact=metadata_item.name,
+                                                                                      type_id=metadata_item.type.id)
+                                    except MultipleObjectsReturned:
+                                        obj = Metadata.objects.filter(name__iexact=metadata_item.name, type_id=metadata_item.type.id)[0]
                                     content.metadata.add(obj)
                                 content.save()
                                 successful_uploads_count = successful_uploads_count + 1
