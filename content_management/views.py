@@ -204,8 +204,14 @@ class ContentViewSet(StandardDataView, viewsets.ModelViewSet):
             "duplicatable", "filesize"
         ]
 
+        field_display_names = [
+            "Title", "Display Title", "File Name", "Description", "Modified On", "Copyright Notes",
+            "Rights Statement", "Additional Notes", "Year Published", "Reviewed On", "Active",
+            "Duplicatable", "Filesize"
+        ]
+
         metadata_types = MetadataType.objects.all().order_by("name")
-        for col_num, field_name in enumerate(content_fields):
+        for col_num, field_name in enumerate(field_display_names):
             worksheet.write(0, col_num, field_name)
 
         for type_num, metadata in enumerate(metadata_types):

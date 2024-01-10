@@ -64,7 +64,8 @@ export default class ContentModal extends Component<ContentModalProps, ContentMo
             rights_statement: get_field_info_default(""),
             additional_notes: get_field_info_default(""),
             copyright_notes: get_field_info_default(""),
-            duplicatable: get_field_info_default(false)
+            duplicatable: get_field_info_default(false),
+            active: get_field_info_default(true)
         }
 
         this.state = {
@@ -107,6 +108,7 @@ export default class ContentModal extends Component<ContentModalProps, ContentMo
                 draft.fields.year = get_field_info_default(
                     row.published_year === null ? "" : row.published_year)
                 draft.fields.duplicatable = get_field_info_default(row.duplicatable)
+                draft.fields.active = get_field_info_default(row.active)
             })
         } else {
             if (!isEqual(this.props.metadata_api.state.metadata_types,
@@ -149,6 +151,7 @@ export default class ContentModal extends Component<ContentModalProps, ContentMo
                                 .then(() => this.update_state(draft => {
                                     Object.keys(this.state.fields).map((field) => {
                                     const cast_field = field as keyof content_fields
+                                    console.log("cast_field: ", cast_field);
                                     draft.fields[cast_field].reason = this.props.validators[cast_field](
                                         draft.fields[cast_field].value
                                     )
@@ -186,7 +189,7 @@ export default class ContentModal extends Component<ContentModalProps, ContentMo
                                 if (this.props.modal_type === "add") {
                                     formData.append('active', "true")
                                 } else {
-                                    formData.append('active', this.props.row?.active ? "true" : "false")
+                                    formData.append('active', this.state.fields.active.value ? "true" : "false")
                                 }
                                 if (!isNull(this.state.fields.reviewed_on.value)) {
                                     formData.append("reviewed_on", format(this.state.fields.reviewed_on.value, "yyyy-MM-dd"))
@@ -356,6 +359,19 @@ export default class ContentModal extends Component<ContentModalProps, ContentMo
                                 }}
                             />
                         </>,
+                        ...(this.props.modal_type === "add" ? [] : [
+                            <>
+                                <Typography>Active</Typography>
+                                <Checkbox
+                                    checked={this.state.fields.active.value}
+                                    onChange={(_evt, checked) => {
+                                        this.update_state(draft => {
+                                            draft.fields.active.value = checked
+                                        })
+                                    }}
+                                />
+                            </>
+                        ]),
                         this.props.metadata_api.state.metadata_types
                             .map((metadata_type: SerializedMetadataType, idx) => {
                             return (

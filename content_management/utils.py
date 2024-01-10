@@ -5,7 +5,7 @@ import shutil
 import time
 from pathlib import Path
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, MultipleObjectsReturned
 from django.core.files import File
 from django.utils import timezone
 from django.utils.text import get_valid_filename
@@ -63,7 +63,28 @@ class ContentSheetUtil:
                                     content.published_date = None
                             content.modified_on = timezone.now()
                             content.additional_notes = each_content.get("Additional Notes")
-                            content.active = True
+                            
+                            active = each_content.get("Active")
+                            if active:
+                                if type(active) == bool:
+                                    content.active = active
+                                elif hasattr(active, "lower"):
+                                    active = active.lower()
+                                    if active == "true" or active == "yes":
+                                        content.active = True
+                                    else:
+                                        content.active = False
+                            duplicatable = each_content.get("Duplicatable")
+                            if duplicatable:
+                                if type(duplicatable) == bool:
+                                    content.duplicatable = duplicatable
+                                elif hasattr(duplicatable, "lower"):
+                                    duplicatable = duplicatable.lower()
+                                    if duplicatable == "true" or duplicatable == "yes":
+                                        content.duplicatable = True
+                                    else:
+                                        content.duplicatable = False
+
                             content.filesize = os.stat(file_path).st_size
                             try:
                                 content.save()
@@ -77,9 +98,13 @@ class ContentSheetUtil:
                             try:
                                 metadata = self.get_associated_meta(each_content)
                                 for metadata_item in metadata:
-                                    obj, created = Metadata.objects.get_or_create(defaults={'name': metadata_item.name},
-                                                                                  name__iexact=metadata_item.name,
-                                                                                  type_id=metadata_item.type.id)
+                                    try:
+                                        obj, created = Metadata.objects.get_or_create(defaults={'name': metadata_item.name},
+                                                                                      name__iexact=metadata_item.name,
+                                                                                      type_id=metadata_item.type.id)
+                                    except MultipleObjectsReturned:
+                                        obj = Metadata.objects.filter(name__iexact=metadata_item.name, type_id=metadata_item.type.id)[0]
+
                                     content.metadata.add(obj)
                                 content.save()
                                 successful_uploads_count = successful_uploads_count + 1
@@ -94,6 +119,7 @@ class ContentSheetUtil:
                 for each_content in content_data:
                     # if title is not found, don't upload its metadata
                     content = Content.objects.filter(title=each_content.get("Title")).first()
+                    print(content)
                     if content is None:
                         unsuccessful_uploads.append({'file_name': each_content.get("Title"),
                                                      'error': 'content does not exist'})
@@ -115,7 +141,28 @@ class ContentSheetUtil:
                                     content.published_date = None
                             content.modified_on = timezone.now()
                             content.additional_notes = each_content.get("Additional Notes")
-                            content.active = True
+
+                            active = each_content.get("Active")
+                            if active:
+                                if type(active) == bool:
+                                    content.active = active
+                                elif hasattr(active, "lower"):
+                                    active = active.lower()
+                                    if active == "true" or active == "yes":
+                                        content.active = True
+                                    else:
+                                        content.active = False
+                            duplicatable = each_content.get("Duplicatable")
+                            if duplicatable:
+                                if type(duplicatable) == bool:
+                                    content.duplicatable = duplicatable
+                                elif hasattr(duplicatable, "lower"):
+                                    duplicatable = duplicatable.lower()
+                                    if duplicatable == "true" or duplicatable == "yes":
+                                        content.duplicatable = True
+                                    else:
+                                        content.duplicatable = False
+
                             try:
                                 content.save()
                             except Exception as e:
@@ -125,9 +172,12 @@ class ContentSheetUtil:
                                 content.metadata.clear()
                                 metadata = self.get_associated_meta(each_content)
                                 for metadata_item in metadata:
-                                    obj, created = Metadata.objects.get_or_create(defaults={'name': metadata_item.name},
-                                                                                  name__iexact=metadata_item.name,
-                                                                                  type_id=metadata_item.type.id)
+                                    try:
+                                        obj, created = Metadata.objects.get_or_create(defaults={'name': metadata_item.name},
+                                                                                      name__iexact=metadata_item.name,
+                                                                                      type_id=metadata_item.type.id)
+                                    except MultipleObjectsReturned:
+                                        obj = Metadata.objects.filter(name__iexact=metadata_item.name, type_id=metadata_item.type.id)[0]
                                     content.metadata.add(obj)
                                 content.save()
                                 successful_uploads_count = successful_uploads_count + 1
