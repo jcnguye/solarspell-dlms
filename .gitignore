@@ -9,3 +9,4 @@ node_modules/
 dlms.log
 dlms.log.*
 *.sqlite3
+.dlms-git-access-token
