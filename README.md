@@ -8,6 +8,7 @@ Before installation of the DLMS, make sure that Python 3.8+ and Node >= 10, <= 1
 
 ### Python Dependencies
 
+Create a python venv 
 To install python dependencies, run this command in the base directory.
 
 ```bash
@@ -55,6 +56,8 @@ To start the server, you must run the following command in the base directory.
 ```bash
 python manage.py runserver
 ```
+
+navigate to localhost:8000/static/index.html
 
 ### Frontend
 
