@@ -30,4 +30,4 @@ urlpatterns = [
     path('api/disk_info/', disk_info),
     path('api/get_csrf/', get_csrf),
     path('api/bulk_edit/', bulk_edit),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
