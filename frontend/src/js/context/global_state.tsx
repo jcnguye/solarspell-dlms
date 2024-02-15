@@ -917,25 +917,25 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
 
     }
 
-    // async remove_module_from_version(version: LibraryVersion, module_to_remove: LibraryModule) {
-    //     return Axios.post(APP_URLS.LIBRARY_VERSION_REMOVE_MODULE(version.id), {
-    //             library_module_id: module_to_remove.id
-    //     }).then(this.refresh_modules_in_current_version)
-    //
-    // }
-
     async remove_module_from_version(version: LibraryVersion, module_to_remove: LibraryModule) {
-        const url = APP_URLS.LIBRARY_VERSION_REMOVE_MODULE(version.id);
-
-        return Axios({
-            method: 'delete',
-            url: url,
-            data: { library_module_id: module_to_remove.id }, // Include module ID in the request body
-            headers: {
-                'Content-Type': 'application/json',
-            },
-        }).then(this.refresh_modules_in_current_version);
+        return Axios.post(APP_URLS.LIBRARY_VERSION_REMOVE_MODULE(version.id), {
+                library_module_id: module_to_remove.id
+        }).then(this.refresh_modules_in_current_version)
+    
     }
+
+    // async remove_module_from_version(version: LibraryVersion, module_to_remove: LibraryModule) {
+    //     const url = APP_URLS.LIBRARY_VERSION_REMOVE_MODULE(version.id);
+
+    //     return Axios({
+    //         method: 'delete',
+    //         url: url,
+    //         data: { library_module_id: module_to_remove.id }, // Include module ID in the request body
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //     }).then(this.refresh_modules_in_current_version);
+    // }
 
     async refresh_modules_in_current_version() {
         return get_data(APP_URLS.LIBRARY_VERSION_MODULES(this.state.library_versions_api.current_version.id))
