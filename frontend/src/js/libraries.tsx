@@ -1,38 +1,33 @@
 import React from 'react';
-import { Grid, Box, Typography, Link, Button, TextField, Checkbox } from '@material-ui/core';
-import { Folder, InsertDriveFile, DoubleArrow } from '@material-ui/icons';
+import {Box, Button, Checkbox, Grid, Link, TextField, Typography} from '@material-ui/core';
+import {DoubleArrow, Folder, InsertDriveFile} from '@material-ui/icons';
 import {
-    LibraryVersionsAPI,
-    LibraryVersion,
-    field_info,
-    UsersAPI,
-    LibraryAssetsAPI,
-    SerializedContent,
-    MetadataAPI,
     ContentsAPI,
-    User,
+    field_info,
+    LibraryAssetsAPI,
     LibraryFolder,
-    LibraryModulesAPI, LibraryModule
+    LibraryModule,
+    LibraryModulesAPI,
+    LibraryVersion,
+    LibraryVersionsAPI,
+    MetadataAPI,
+    SerializedContent,
+    User,
+    UsersAPI
 } from './types';
-import {
-    Grid as DataGrid,
-    PagingPanel,
-    Table,
-    TableHeaderRow,
-} from "@devexpress/dx-react-grid-material-ui"
+import {Grid as DataGrid, PagingPanel, Table, TableHeaderRow,} from "@devexpress/dx-react-grid-material-ui"
 import prettyBytes from 'pretty-bytes';
 import ActionPanel from './reusable/action_panel';
 import ActionDialog from './reusable/action_dialog';
-import { cloneDeep, isString } from 'lodash';
-import { get_field_info_default, update_state } from './utils';
+import {cloneDeep, isString} from 'lodash';
+import {get_field_info_default, get_string_from_error, update_state} from './utils';
 import VALIDATORS from './validators';
-import { ViewContentModal } from './reusable/view_content_modal';
+import {ViewContentModal} from './reusable/view_content_modal';
 import ContentSearch from './reusable/content_search';
-import { Autocomplete, createFilterOptions } from '@material-ui/lab';
-import { format } from 'date-fns';
+import {Autocomplete, createFilterOptions} from '@material-ui/lab';
+import {format} from 'date-fns';
 import KebabMenu from './reusable/kebab_menu';
-import { CustomPaging, PagingState } from '@devexpress/dx-react-grid';
-import { get_string_from_error } from "./utils";
+import {CustomPaging, PagingState} from '@devexpress/dx-react-grid';
 
 interface LibrariesProps {
     users_api: UsersAPI
@@ -133,6 +128,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
     user_defaults: User
     auto_complete_filter: any
     update_state: (update_func: (draft: LibrariesState) => void) => Promise<void>
+
     constructor(props: LibrariesProps) {
         super(props)
 
@@ -164,7 +160,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
             metadata_info: [],
             published_year: ""
         }
-        
+
         this.user_defaults = {
             id: 0,
             name: ""
@@ -318,67 +314,71 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                         </Box>
                         <DataGrid
                             columns={[
-                                {name: "actions", title: "Actions", getCellValue: (row: LibraryVersion) => (
-                                    <ActionPanel
-                                        viewHint="view"
-                                        viewFn={() => {
-                                            this.props.library_versions_api.enter_version_root(row)
-                                        }}
-                                        deleteHint="Delete"
-                                        deleteFn={() => {
-                                            this.update_state(draft => {
-                                                draft.modals.delete_version.is_open = true
-                                                draft.modals.delete_version.to_delete = row
-                                            })
-                                        }}
-                                        editHint="Edit"
-                                        editFn={() => {
-                                            this.update_state(draft => {
-                                                draft.modals.edit_version.is_open = true
-                                                draft.modals.edit_version.version = cloneDeep(row)
-                                                draft.modals.edit_version.name.value = row.library_name
-                                                draft.modals.edit_version.number.value = row.version_number
-                                                const user = this.props.users_api.state.users.find(user => user.id === row.created_by)
-                                                if (user !== undefined) {
-                                                    draft.modals.edit_version.created_by = user
-                                                }
-                                            })
-                                        }}
-                                        imageFn={() => {
-                                            this.update_state(draft => {
-                                                draft.modals.set_banner.to_set = cloneDeep(row)
-                                                draft.modals.set_banner.is_open = true
-                                            })
-                                        }}
-                                        cloneHint="Clone"
-                                        cloneFn={() => {
-                                            this.props.library_versions_api.clone_version(row)
-                                                .then(() => this.props.show_toast_message("Library Successfully Cloned", true))
-                                        }}
-                                        metadataHint="Set Metadata"
-                                        buildFn={() => {
-                                            this.update_state(draft => {
-                                                draft.modals.set_version_metadata.is_open = true
-                                                draft.modals.set_version_metadata.library_version = cloneDeep(row)
-                                            })
-                                        }}
-                                    />
-                                )},
+                                {
+                                    name: "actions", title: "Actions", getCellValue: (row: LibraryVersion) => (
+                                        <ActionPanel
+                                            viewHint="view"
+                                            viewFn={() => {
+                                                this.props.library_versions_api.enter_version_root(row)
+                                            }}
+                                            deleteHint="Delete"
+                                            deleteFn={() => {
+                                                this.update_state(draft => {
+                                                    draft.modals.delete_version.is_open = true
+                                                    draft.modals.delete_version.to_delete = row
+                                                })
+                                            }}
+                                            editHint="Edit"
+                                            editFn={() => {
+                                                this.update_state(draft => {
+                                                    draft.modals.edit_version.is_open = true
+                                                    draft.modals.edit_version.version = cloneDeep(row)
+                                                    draft.modals.edit_version.name.value = row.library_name
+                                                    draft.modals.edit_version.number.value = row.version_number
+                                                    const user = this.props.users_api.state.users.find(user => user.id === row.created_by)
+                                                    if (user !== undefined) {
+                                                        draft.modals.edit_version.created_by = user
+                                                    }
+                                                })
+                                            }}
+                                            imageFn={() => {
+                                                this.update_state(draft => {
+                                                    draft.modals.set_banner.to_set = cloneDeep(row)
+                                                    draft.modals.set_banner.is_open = true
+                                                })
+                                            }}
+                                            cloneHint="Clone"
+                                            cloneFn={() => {
+                                                this.props.library_versions_api.clone_version(row)
+                                                    .then(() => this.props.show_toast_message("Library Successfully Cloned", true))
+                                            }}
+                                            metadataHint="Set Metadata"
+                                            buildFn={() => {
+                                                this.update_state(draft => {
+                                                    draft.modals.set_version_metadata.is_open = true
+                                                    draft.modals.set_version_metadata.library_version = cloneDeep(row)
+                                                })
+                                            }}
+                                        />
+                                    )
+                                },
                                 {name: "library_name", title: "Name"},
                                 {name: "version_number", title: "Version"},
-                                {name: "created_by_name", title: "Creator", getCellValue: (row: LibraryVersion) => {
-                                    const user = this.props.users_api.state.users.find(user => user.id === row.created_by)
-                                    return user === undefined ? "None" : user.name
-                                }},
+                                {
+                                    name: "created_by_name", title: "Creator", getCellValue: (row: LibraryVersion) => {
+                                        const user = this.props.users_api.state.users.find(user => user.id === row.created_by)
+                                        return user === undefined ? "None" : user.name
+                                    }
+                                },
                                 {name: "created_on", title: "Created On"},
                             ]}
-                            
+
                             rows={this.props.library_versions_api.state.library_versions.map((version: any) => {
                                 const cloned = cloneDeep(version)
                                 cloned.created_on = format(
                                     new Date(version.created_on),
                                     "MM/dd/yyyy"
-                                    )
+                                )
                                 return cloned
                             })}
                         >
@@ -394,12 +394,12 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                 onPageSizeChange={this.props.library_versions_api.set_page_size}
                             />
                             <CustomPaging totalCount={this.props.library_versions_api.state.library_versions_count}/>
-                            <TableHeaderRow />
-                            <PagingPanel />
+                            <TableHeaderRow/>
+                            <PagingPanel/>
                         </DataGrid>
                     </Grid>
                 </Grid>
-                <Grid container spacing={2} style={{paddingLeft: "15px", paddingRight: "15px", marginTop:"20px"}}>
+                <Grid container spacing={2} style={{paddingLeft: "15px", paddingRight: "15px", marginTop: "20px"}}>
                     <Grid item sm={6}>
                         {
                             this.props.library_versions_api.state.current_version.id === 0 ?
@@ -410,7 +410,8 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                         if (library_banner !== 0) {
                                             const version_banner = this.props.library_assets_api.state.assets_by_group[2]?.find(asset => asset.id === library_banner)
                                             if (version_banner !== undefined && version_banner.image_file !== null) {
-                                                return <img src={version_banner.image_file} style={{maxHeight: "200px", maxWidth: "100%"}}></img>
+                                                return <img src={version_banner.image_file}
+                                                            style={{maxHeight: "200px", maxWidth: "100%"}}></img>
                                             } else {
                                                 return <></>
                                             }
@@ -429,7 +430,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                                 fontSize: "16px"
                                             }}>Library Content</Typography>
                                         </Box>
-                                        <Box marginLeft="auto"  style={{
+                                        <Box marginLeft="auto" style={{
                                             paddingTop: "1em",
                                             paddingBottom: "1em",
                                         }}>
@@ -470,12 +471,12 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                                                     </Link>
                                                                 )}
                                                             </Typography>
-                                                            <DoubleArrow />
+                                                            <DoubleArrow/>
                                                         </Box>
                                                     )
                                                 })()
                                             ].concat(this.props.library_versions_api.state.path.map((folder, idx) => (
-                                                <Box key={idx+1} flexDirection="row" display="flex">
+                                                <Box key={idx + 1} flexDirection="row" display="flex">
                                                     <Typography>
                                                         <Link
                                                             style={{cursor: "pointer"}}
@@ -486,7 +487,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                                             {folder.folder_name}
                                                         </Link>
                                                     </Typography>
-                                                    <DoubleArrow />
+                                                    <DoubleArrow/>
                                                 </Box>
                                             )))
                                         }
@@ -506,7 +507,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                                 />
                                             </Box>
                                             <Box style={{paddingTop: "9px"}}>
-                                                <Folder />
+                                                <Folder/>
                                             </Box>
                                             {
                                                 folder.logo_img > 0 ?
@@ -568,16 +569,16 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                                     ] as [() => void, string][]).concat(
                                                         //If we are in the top level version add set logo menu items
                                                         this.props.library_versions_api.state.path.length === 0 ?
-                                                        [
                                                             [
-                                                                () => {
-                                                                    this.update_state(draft => {
-                                                                        draft.modals.set_folder_logo.is_open = true
-                                                                        draft.modals.set_folder_logo.to_change = cloneDeep(folder)
-                                                                    })
-                                                                }, "Set Logo"
-                                                            ]
-                                                        ] : []
+                                                                [
+                                                                    () => {
+                                                                        this.update_state(draft => {
+                                                                            draft.modals.set_folder_logo.is_open = true
+                                                                            draft.modals.set_folder_logo.to_change = cloneDeep(folder)
+                                                                        })
+                                                                    }, "Set Logo"
+                                                                ]
+                                                            ] : []
                                                     )}
                                                 />
                                             </Box>
@@ -603,7 +604,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                                 />
                                             </Box>
                                             <Box style={{paddingTop: "9px"}}>
-                                                <InsertDriveFile />
+                                                <InsertDriveFile/>
                                             </Box>
                                             <Box style={{paddingTop: "9px"}}>
                                                 <Typography>
@@ -630,7 +631,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                                             () => {
                                                                 const path = this.props.library_versions_api.state.path
                                                                 this.props.library_versions_api.remove_content_from_folder(
-                                                                    path[path.length -1], this.state.selected_files
+                                                                    path[path.length - 1], this.state.selected_files
                                                                 ).then(this.reset_selection)
                                                             },
                                                             "Remove Selected"
@@ -651,29 +652,79 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                     {// Displays an empty message if there are no folders or files in the current directory
                                         this.props.library_versions_api.state.current_directory.folders.length === 0 &&
                                         this.props.library_versions_api.state.current_directory.files.length === 0 ? (
-                                            <Typography style={{fontStyle: "italic"}}>No Files or Folders</Typography>
-                                        ) : <></>
-                                    }
-                                    <Typography style={{fontWeight: "bold", color: "#75b2dd"}}>Library Modules</Typography>
-                                    {this.props.library_versions_api.state.modules_in_version.map((module: LibraryModule, idx) => (
-                                        <Box
-                                            key={this.props.library_versions_api.state.modules_in_version.length + idx}
-                                            display="flex"
-                                            flexDirection="row"
-                                            width="100%"
-                                        >
-                                            <Box>
-                                                <Typography>
-                                                    {module.module_name}
+                                            <Typography style={{ fontStyle: "italic" }}>No Files or Folders</Typography>
+                                        ) : (
+                                            <>
+                                                <Typography style={{ fontWeight: "bold", color: "#75b2dd" }}>
+                                                    Library Modules
                                                 </Typography>
-                                            </Box>
-                                        </Box>
-                                    ))}
-                                    {// Displays an empty message if there are no modules in the current version
-                                        this.props.library_versions_api.state.modules_in_version.length === 0 ? (
-                                            <Typography style={{fontStyle: "italic"}}>No Modules added yet</Typography>
-                                        ) : <></>
-                                    }                        
+                                                {
+                                                    this.props.library_versions_api.state.current_directory.folders.length === 0 &&
+                                                    this.props.library_versions_api.state.current_directory.files.length === 0 ? (
+                                                        <Typography style={{ fontStyle: "italic" }}>No Files or Folders</Typography>
+                                                    ) : (
+                                                        <>
+                                                            {this.props.library_versions_api.state.modules_in_version.map(
+                                                                (module: LibraryModule, idx) => (
+                                                                    <Box
+                                                                        key={idx}
+                                                                        display="flex"
+                                                                        flexDirection="row"
+                                                                        alignItems="center"
+                                                                        justifyContent="space-between"
+                                                                        width="100%"
+                                                                    >
+                                                                        <Box>
+                                                                            <Typography>
+                                                                                {module.module_name}
+                                                                            </Typography>
+                                                                        </Box>
+                                                                        <Box style={{ paddingTop: "9px" }}>
+                                                                            <KebabMenu
+                                                                                items={[
+                                                                                    [
+                                                                                        () => {
+                                                                                            const currentVersion = this.props.library_versions_api.state.current_version;
+                                                                                            this.props.library_versions_api.remove_module_from_version(
+                                                                                                currentVersion,
+                                                                                                module
+                                                                                            ).then(this.close_modals);
+                                                                                        },
+                                                                                        "Remove"
+                                                                                    ]
+                                                                                ]}
+                                                                            />
+                                                                        </Box>
+                                                                    </Box>
+                                                                )
+                                                            )}
+
+                                                            {
+                                                                this.props.library_versions_api.state.modules_in_version.length === 0 ? (
+                                                                    <Typography style={{ fontStyle: "italic" }}>
+                                                                        No Modules added yet
+                                                                    </Typography>
+                                                                ) : (
+                                                                    <></>
+                                                                )
+                                                            }
+                                                        </>
+                                                    )
+                                                }
+
+                                                {// Displays an empty message if there are no modules in the current version
+                                                    this.props.library_versions_api.state.modules_in_version.length === 0 ? (
+                                                        <Typography style={{ fontStyle: "italic" }}>
+                                                            No Modules added yet
+                                                        </Typography>
+                                                    ) : (
+                                                        <></>
+                                                    )
+                                                }
+                                            </>
+                                        )
+                                    }
+
                                 </Grid>
                         }
                     </Grid>
@@ -682,8 +733,8 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                             onClick={() => {
                                 const path = this.props.library_versions_api.state.path
                                 const cd = path.length > 0 ?
-				    path[path.length - 1] :
-				    undefined
+                                    path[path.length - 1] :
+                                    undefined
                                 if (cd) {
                                     this.props.contents_api.add_selected_to_folder(cd)
                                 }
@@ -952,10 +1003,10 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                     key={idx}
                                     item
                                     style={this.state.modals.set_banner.to_set.library_banner === asset.id
-                                    ? {backgroundColor: "#75b2dd"} : undefined}
+                                        ? {backgroundColor: "#75b2dd"} : undefined}
                                     onClick={_ => {
                                         this.props.library_versions_api.set_version_image(this.state.modals.set_banner.to_set, asset)
-                                        .then(this.close_modals)
+                                            .then(this.close_modals)
                                     }}
                                 >
                                     <img
@@ -989,11 +1040,11 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                     key={idx}
                                     item
                                     style={this.state.modals.set_folder_logo.to_change.logo_img === asset.id
-                                    ? {backgroundColor: "#75b2dd"} : undefined}
+                                        ? {backgroundColor: "#75b2dd"} : undefined}
                                     onClick={_ => {
                                         this.props.library_versions_api.set_folder_logo(this.state.modals.set_folder_logo.to_change, asset)
-                                        .then(this.close_modals)
-                                        .then(this.props.library_versions_api.refresh_current_directory)
+                                            .then(this.close_modals)
+                                            .then(this.props.library_versions_api.refresh_current_directory)
                                     }}
                                 >
                                     <img
@@ -1011,7 +1062,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                     get_actions={focus_ref => [(
                         <Button
                             key={1}
-                            onClick={()=> {
+                            onClick={() => {
                                 this.update_state(draft => {
                                     draft.modals.delete_version.name.reason = VALIDATORS.DELETE_IF_EQUALS(
                                         draft.modals.delete_version.name.value, this.state.modals.delete_version.to_delete.library_name
@@ -1039,7 +1090,8 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                         </Button>
                     )]}
                 >
-                    <Typography>This action is irreversible. Please enter {this.state.modals.delete_version.to_delete.library_name} to confirm deletion</Typography>
+                    <Typography>This action is irreversible. Please
+                        enter {this.state.modals.delete_version.to_delete.library_name} to confirm deletion</Typography>
                     <TextField
                         fullWidth
                         error={this.state.modals.delete_version.name.reason === ""}
@@ -1116,7 +1168,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                     get_actions={focus_ref => [(
                         <Button
                             key={1}
-                            onClick={()=> {
+                            onClick={() => {
                                 this.update_state(draft => {
                                     draft.modals.delete_folder.name.reason = VALIDATORS.DELETE_IF_EQUALS(
                                         draft.modals.delete_folder.name.value, this.state.modals.delete_folder.to_delete.folder_name
@@ -1144,7 +1196,8 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                         </Button>
                     )]}
                 >
-                    <Typography>This action is irreversible. Please enter {this.state.modals.delete_folder.to_delete.folder_name} to confirm deletion</Typography>
+                    <Typography>This action is irreversible. Please
+                        enter {this.state.modals.delete_folder.to_delete.folder_name} to confirm deletion</Typography>
                     <TextField
                         label={"Folder Name"}
                         fullWidth
@@ -1173,7 +1226,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                     ), (
                         <Button
                             key={1}
-                            onClick={()=> {
+                            onClick={() => {
                                 this.update_state(draft => {
                                     draft.modals.rename_folder.name.reason = VALIDATORS.FOLDER_NAME(
                                         draft.modals.rename_folder.name.value
@@ -1222,7 +1275,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                     ), (
                         <Button
                             key={1}
-                            onClick={()=> {
+                            onClick={() => {
                                 const path = this.props.library_versions_api.state.path
                                 console.log("path: ", path[path.length - 1]);
                                 console.log("selected: ", this.state.selected_files);
@@ -1242,7 +1295,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                 >
                     <Autocomplete
                         value={this.state.modals.move_content.destination_folder}
-                        onChange={(_evt:any, value: [LibraryFolder, string] | null) => {
+                        onChange={(_evt: any, value: [LibraryFolder, string] | null) => {
                             if (value !== null) {
                                 this.update_state(draft => {
                                     draft.modals.move_content.destination_folder = value
@@ -1252,7 +1305,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                         filterOptions={(options: any, params: any) => {
                             return this.auto_complete_filter(options, params)
                         }}
-                        handleHomeEndKeys   
+                        handleHomeEndKeys
                         options={this.props.library_versions_api.state.folders_in_version}
                         getOptionLabel={option => option[1]}
                         renderInput={params => (
@@ -1278,7 +1331,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                     ), (
                         <Button
                             key={1}
-                            onClick={()=> {
+                            onClick={() => {
                                 this.props.library_versions_api.add_module_to_version(
                                     this.props.library_versions_api.state.current_version,
                                     this.state.modals.add_module_to_version.to_add
@@ -1345,9 +1398,9 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                         (checked ?
                                             this.props.library_versions_api.add_metadata_type_to_version :
                                             this.props.library_versions_api.remove_metadata_type_to_version)(
-                                                this.state.modals.set_version_metadata.library_version,
-                                                metadata_type
-                                            )
+                                            this.state.modals.set_version_metadata.library_version,
+                                            metadata_type
+                                        )
                                             .then(version => {
                                                 console.log(checked, version)
                                                 this.update_state(draft => {
@@ -1385,7 +1438,7 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                                     this.state.modals.move_folder.copy,
                                     this.state.modals.move_folder
                                         .destination_folder.id === 0 ||
-                                        this.state.modals.move_folder
+                                    this.state.modals.move_folder
                                         .top_level_folder ?
                                         undefined :
                                         this.state.modals.move_folder
@@ -1449,29 +1502,29 @@ export default class Libraries extends React.Component<LibrariesProps, Libraries
                         })}
                     />
                     {this.state.modals.move_folder.top_level_folder ?
-                    <></> :
-                    <Autocomplete
-                        value={this.state.modals.move_folder.destination_folder}
-                        options={
-                            this.props.library_versions_api.state.autocomplete_folders
-                        }
-                        onChange={(_, folder) => {
-                            if (folder) this.update_state(draft => {
-                                draft.modals.move_folder.destination_folder = folder
-                            })
-                        }}
-                        getOptionLabel={folder =>
-                            folder.breadcrumb?.map(folder => folder.folder_name)
-                            .join("/") || ""}
-                        filterOptions={(options, params) => {
-                            return this.auto_complete_filter(options, params)
-                        }}
-                        renderInput={params => <TextField
-                            {...params}
-                            variant="standard"
-                            placeholder="Destination Folder"
+                        <></> :
+                        <Autocomplete
+                            value={this.state.modals.move_folder.destination_folder}
+                            options={
+                                this.props.library_versions_api.state.autocomplete_folders
+                            }
+                            onChange={(_, folder) => {
+                                if (folder) this.update_state(draft => {
+                                    draft.modals.move_folder.destination_folder = folder
+                                })
+                            }}
+                            getOptionLabel={folder =>
+                                folder.breadcrumb?.map(folder => folder.folder_name)
+                                    .join("/") || ""}
+                            filterOptions={(options, params) => {
+                                return this.auto_complete_filter(options, params)
+                            }}
+                            renderInput={params => <TextField
+                                {...params}
+                                variant="standard"
+                                placeholder="Destination Folder"
+                            />}
                         />}
-                    />}
                 </ActionDialog>
                 <ActionDialog
                     open={this.state.modals.column_select.is_open}
