@@ -365,7 +365,7 @@ class LibraryVersionViewSet(StandardDataView, viewsets.ModelViewSet):
         )
         return build_response()
 
-    @action(methods=['post'], detail=True)
+    @action(methods=['post', 'delete'], detail=True)
     def removemodule(self, request, pk=None):
         if pk is None:
             return build_response(
