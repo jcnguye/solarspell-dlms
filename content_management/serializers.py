@@ -1,7 +1,8 @@
 from rest_framework.serializers import ModelSerializer
 from content_management.models import (
     Content, Metadata, MetadataType, User,
-    LibraryVersion, LibraryFolder, LibLayoutImage, LibraryModule)
+    LibraryVersion, LibraryFolder, LibLayoutImage, LibraryModule, Changelog )
+
 from rest_framework.validators import UniqueTogetherValidator
 
 
@@ -64,3 +65,8 @@ class LibraryModuleSerializer(ModelSerializer):
     class Meta:
         model = LibraryModule
         fields = ("id", "module_name", "module_file", "logo_img", "file_name")
+
+class ChangelogSerializer(ModelSerializer):
+    class Meta:
+        model = Changelog
+        fields = ("id", "change_date", "change_description","library_version_id")
