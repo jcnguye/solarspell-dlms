@@ -16,6 +16,13 @@ interface GlobalStateProps {
         apis: APIs
     }>
 }
+interface Changelog {
+    id: number;
+    change_date: string;
+    change_description: string;
+    library_version_id: number;
+  }
+  
 interface GlobalStateState {
     contents_api: ContentsProviderState
     metadata_api: MetadataProviderState
@@ -24,8 +31,10 @@ interface GlobalStateState {
     users_api: UserProviderState
     library_modules_api: LibraryModulesState
     utils_api: UtilsState
+     
 }
 
+  
 export default class GlobalState extends React.Component<GlobalStateProps, GlobalStateState> {
     search_defaults: search_state
     update_state: (update_func: (draft: GlobalStateState) => void) => Promise<void>
@@ -98,7 +107,9 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                     version_number: "",
                     library_banner: 0,
                     created_by: 0,
-                    metadata_types: []
+                    metadata_types: [],
+                    changelogs: [],
+
                 },
                 path: [],
                 modules_in_version: [],
@@ -191,7 +202,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         this.update_folder_autocomplete = this.update_folder_autocomplete.bind(this)
         this.update_version_autocomplete = this.update_version_autocomplete.bind(this)
         this.build_version = this.handle_loader(this.build_version.bind(this))
-
+        this.refresh_changelog = this.handle_loader(this.refresh_changelog.bind(this))
 
         //Users API
         this.refresh_users = this.handle_loader(this.refresh_users.bind(this))
@@ -248,6 +259,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         this.refresh_modules_in_current_version()
         this.get_disk_info()
         this.update_version_autocomplete("")
+        this.refresh_changelog()
     }
 
     // CONTENTS ----------------------------------------------------
@@ -434,7 +446,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
-        }).then(this.load_content_rows)
+        }).then(this.load_content_rows) 
     }
 
     //Delete existing content record
@@ -704,7 +716,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                 folder,
                 folder.breadcrumb.map(folder => folder.folder_name).join("/")
             ])
-        })
+        }).finally(this.refresh_changelog)
     }
 
     //Load all library versions
@@ -720,6 +732,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             return this.update_state(draft => {
                 draft.library_versions_api.library_versions = response.results
                 draft.library_versions_api.library_versions_count = response.count
+                
             })
         } catch (err) {
             if (err.data.error.detail === "Invalid page.") {
@@ -743,6 +756,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         })
         await this.refresh_folders_in_current_version()
         await this.refresh_modules_in_current_version()
+        await this.refresh_changelog()
         return this.load_content_rows()
     }
 
@@ -751,6 +765,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         return length > 0 ?
             this._update_current_directory(this.state.library_versions_api.path[length - 1] as LibraryFolder) :
             this.enter_version_root(this.state.library_versions_api.current_version)
+            
     }
 
     async _update_current_directory(folder: LibraryFolder) {
@@ -838,10 +853,24 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
     async delete_version(version: LibraryVersion) {
         return Axios.delete(APP_URLS.LIBRARY_VERSION(version.id))
             .then(this.refresh_library_versions)
+            
     }
 
     async build_version(version: LibraryVersion) {
         return Axios.get(APP_URLS.LIBRARY_BUILD(version.id))
+    }
+
+
+    async refresh_changelog() {
+        const changelogData = await get_data(APP_URLS.LIBRARY_VERSION_CHANGELOGS(this.state.library_versions_api.current_version.id))
+        
+        if(JSON.stringify(changelogData.results) == ""){
+            console.log("NO CHANGE LOG DATA RECIEVED!!!")
+        }
+        return this.update_state(draft => {
+            console.log(changelogData)
+            draft.library_versions_api.current_version.changelogs = changelogData
+        })
     }
 
     async update_version(version: LibraryVersion, name?: string, number?: string, user?: User) {
@@ -985,7 +1014,8 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                 version_number: "",
                 library_banner: 0,
                 created_by: 0,
-                metadata_types: []
+                metadata_types: [],
+                changelogs: [],
             }
             draft.library_versions_api.path = []
             draft.library_versions_api.modules_in_version = []
@@ -1158,8 +1188,9 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                     move_folder: this.move_folder,
                     update_version_autocomplete: this.update_version_autocomplete,
                     update_folder_autocomplete: this.update_folder_autocomplete,
-                    build_version: this.build_version
-                },
+                    build_version: this.build_version,
+                    refresh_changelog:this.refresh_changelog,
+            },
                 metadata_api: {
                     state: this.state.metadata_api,
                     add_metadata: this.add_metadata,

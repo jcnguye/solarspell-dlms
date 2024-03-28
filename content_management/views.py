@@ -1,15 +1,16 @@
 from rest_framework import viewsets, permissions, views
+import logging
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import action, api_view, renderer_classes
 from content_management.models import (
     Content, Metadata, MetadataType, LibLayoutImage, LibraryVersion,
     LibraryFolder, User,
-    LibraryModule)
+    LibraryModule, Changelog)
 from content_management.utils import ContentSheetUtil, LibraryBuildUtil
 
 from content_management.serializers import ContentSerializer, MetadataSerializer, MetadataTypeSerializer, \
-    LibLayoutImageSerializer, LibraryVersionSerializer, LibraryFolderSerializer, UserSerializer, LibraryModuleSerializer
+    LibLayoutImageSerializer, LibraryVersionSerializer, LibraryFolderSerializer, UserSerializer, LibraryModuleSerializer, ChangelogSerializer
 
 from content_management.standardize_format import build_response
 from content_management.paginators import PageNumberSizePagination
@@ -682,3 +683,21 @@ def bulk_edit(request):
         content.metadata.add(*to_add)
 
     return build_response()
+
+
+class ChangelogViewSet(StandardDataView, viewsets.ModelViewSet):
+    serializer_class = ChangelogSerializer
+    queryset = Changelog.objects.all()
+    
+    
+    def retrieve(self, request, pk=None):
+        if pk is None:
+            print("No Version ID supplied")
+            return build_response(
+                status=status.HTTP_400_BAD_REQUEST,
+                success=False,
+                error="No Version ID supplied"
+            )
+        else:
+            print("Version ID:", pk)  # Print the value of pk
+            return build_response(ChangelogSerializer(Changelog.objects.filter(library_version_id=pk).order_by("id"), many=True).data if pk != None else [])

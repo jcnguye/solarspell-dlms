@@ -157,6 +157,7 @@ type LibraryVersionsAPI = {
     update_version_autocomplete: (prefix: string) => Promise<any>
     update_folder_autocomplete: (version: LibraryVersion) => Promise<any>
     build_version: (version: LibraryVersion) => Promise<any>
+    refresh_changelog: (version: LibraryVersion) => Promise<any>
 }
 
 type UsersAPI = {
@@ -319,7 +320,12 @@ type search_state = {
     reviewed_to: Date | null
     duplicatable: "all" | "yes" | "no"
 }
-
+interface Changelog {
+    id: number;
+    change_date: string;
+    change_description: string;
+    library_version_id: number;
+  }
 type LibraryVersion = {
     id: number
     library_name: string
@@ -327,6 +333,7 @@ type LibraryVersion = {
     library_banner: number
     created_by: number
     metadata_types: number[]
+    changelogs: Changelog[]
 }
 
 type LibraryFolder = {

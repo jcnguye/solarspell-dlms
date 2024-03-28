@@ -124,6 +124,8 @@ const APP_URLS = {
     USERS: url_with_params(`${api_path}/users/`),
     LIBRARY_MODULE: (id: number) => url_with_params(`${api_path}/library_modules/${id}/`),
     LIBRARY_MODULES: url_with_params(`${api_path}/library_modules/`),
+    LIBRARY_VERSION_CHANGELOGS: (versionId: number) =>
+        url_with_params(`${api_path}/changelogs/${versionId}/`),
     
 }
 
