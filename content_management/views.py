@@ -50,6 +50,7 @@ class StandardDataView:
             serializer.is_valid(raise_exception=True)
             self.perform_create(serializer)
             headers = self.get_success_headers(serializer.data)
+            
             return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers) 
         except IntegrityError as e:
             return build_response(status=status.HTTP_400_BAD_REQUEST, success=False, error="Already Exists in Database")
@@ -285,6 +286,7 @@ class LibraryVersionViewSet(StandardDataView, viewsets.ModelViewSet):
 
     def get_queryset(self):
             return self.queryset.order_by("id")
+    
 
     @action(methods=['post'], detail=True)
     def add_metadata_type(self, request, pk=None):
@@ -301,6 +303,11 @@ class LibraryVersionViewSet(StandardDataView, viewsets.ModelViewSet):
         version.metadata_types.add(
             MetadataType.objects.get(id=metadata_type_id)
         )
+        metaName = MetadataType.objects.get(id=metadata_type_id).name
+        # Create Changelog entry
+        description = f"Added metadata type '{metaName}' to library version {version.version_number}"
+        Changelog.objects.create(library_version_id=pk, change_description=description)
+
         print(version.metadata_types )
         return build_response(LibraryVersionSerializer(version).data)
 
@@ -319,6 +326,10 @@ class LibraryVersionViewSet(StandardDataView, viewsets.ModelViewSet):
         version.metadata_types.remove(
             MetadataType.objects.get(id=metadata_type_id)
         )
+        metaName = MetadataType.objects.get(id=metadata_type_id).name
+        description = f"Removed metadata type '{metaName}' to library version {version.version_number}"
+        Changelog.objects.create(library_version_id=pk, change_description=description)
+
         print(version.metadata_types)
         return build_response(LibraryVersionSerializer(version).data)
 
@@ -347,7 +358,13 @@ class LibraryVersionViewSet(StandardDataView, viewsets.ModelViewSet):
 
     @action(methods=['post'], detail=True)
     def addmodule(self, request, pk=None):
+        print("REACHED")
+                
+        logger = logging.getLogger("mylogger")
+        logger.info("Whatever to log")
+        
         if pk is None:
+            print("No PK")
             return build_response(
                 status=status.HTTP_400_BAD_REQUEST,
                 success=False,
@@ -355,6 +372,7 @@ class LibraryVersionViewSet(StandardDataView, viewsets.ModelViewSet):
             )
         library_module_id = request.data.get("library_module_id", None)
         if library_module_id is None:
+            print("No ID")
             return build_response(
                 status=status.HTTP_400_BAD_REQUEST,
                 success=False,
@@ -364,9 +382,17 @@ class LibraryVersionViewSet(StandardDataView, viewsets.ModelViewSet):
         version.library_modules.add(
             LibraryModule.objects.get(id=library_module_id)
         )
+        
+        # Get module name for description
+        module_name_s = LibraryModule.objects.get(id=library_module_id).module_name
+        libVersionName = LibraryVersion.objects.get(id=pk).library_name
+        # Create Changelog entry
+        description = f"Added module {module_name_s} (ID: {library_module_id}) to library version {version.version_number}"
+        Changelog.objects.create(library_version_id=pk, change_description=description)
+
         return build_response()
 
-    @action(methods=['post', 'delete'], detail=True)
+    @action(methods=['post'], detail=True)
     def removemodule(self, request, pk=None):
         if pk is None:
             return build_response(
@@ -381,11 +407,29 @@ class LibraryVersionViewSet(StandardDataView, viewsets.ModelViewSet):
                 success=False,
                 error="No Module ID supplied"
             )
-        version = self.get_queryset().get(id=pk)
-        version.library_modules.remove(
-            LibraryModule.objects.get(id=library_module_id)
-        )
-        return build_response()
+        try:
+            version = self.get_queryset().get(id=pk)
+            module_to_remove = LibraryModule.objects.get(id=library_module_id)
+            version.library_modules.remove(module_to_remove)
+            libVersionName = LibraryVersion.objects.get(id=pk).library_name
+            # Try to Create Changelog entry, alot of exceptions may occur due to deleted modules
+            description = f"Removed module {module_to_remove.module_name} (ID: {library_module_id}) from library version {version.version_number}"
+            Changelog.objects.create(library_version=version, change_description=description)
+            
+            return build_response()
+        except LibraryVersion.DoesNotExist:
+            return build_response(
+                status=status.HTTP_404_NOT_FOUND,
+                success=False,
+                error=f"Library version with ID {pk} does not exist"
+            )
+        except LibraryModule.DoesNotExist:
+            return build_response(
+                status=status.HTTP_404_NOT_FOUND,
+                success=False,
+                error=f"Library module with ID {library_module_id} does not exist"
+            )
+
 
     @action(methods=["get"], detail=False)
     def filter_prefix(self, request):
@@ -455,6 +499,7 @@ class LibraryVersionViewSet(StandardDataView, viewsets.ModelViewSet):
 class LibraryFolderViewSet(StandardDataView, viewsets.ModelViewSet):
     queryset = LibraryFolder.objects.all()
     serializer_class = LibraryFolderSerializer
+    
 
     @action(methods=['get'], detail=True)
     def contents(self, request, pk=None):
@@ -480,6 +525,7 @@ class LibraryFolderViewSet(StandardDataView, viewsets.ModelViewSet):
     
     @action(methods=['post'], detail=True)
     def addcontent(self, request, pk=None):
+        print("yaya")
         if pk is None:
             return build_response(
                 status=status.HTTP_400_BAD_REQUEST,
@@ -496,11 +542,15 @@ class LibraryFolderViewSet(StandardDataView, viewsets.ModelViewSet):
         
         folder = self.get_queryset().get(id=pk)
         for content_id in content_ids:
-            folder.library_content.add(
-                Content.objects.get(id=content_id)
-            )
+            content = Content.objects.get(id=content_id)
+            folder.library_content.add(content)
+        
+            # Create a changelog entry
+            description = f"Added content {content.title} (ID: {content.id}) to folder {folder.folder_name} (ID: {folder.id})"
+            Changelog.objects.create(library_version=folder.version, change_description=description)
 
         return build_response()
+
     
     @action(methods=['post'], detail=True)
     def removecontent(self, request, pk=None):
@@ -521,9 +571,12 @@ class LibraryFolderViewSet(StandardDataView, viewsets.ModelViewSet):
         
         folder = self.get_queryset().get(id=pk)
         for content_id in content_ids:
-            folder.library_content.remove(
-                Content.objects.get(id=content_id)
-            )
+            content = Content.objects.get(id=content_id)
+            folder.library_content.remove(content)
+
+            # Create a changelog entry :/
+            description = f"Removed content {content.title} (ID: {content.id}) from folder {folder.folder_name} (ID: {folder.id})"
+            Changelog.objects.create(library_version=folder.version, change_description=description)
 
         return build_response()
 
@@ -551,6 +604,10 @@ class LibraryFolderViewSet(StandardDataView, viewsets.ModelViewSet):
             to_move.parent = destination
             to_move.save()
             update_child_version(to_move, destination.version)
+            folderName = LibraryFolder.objects.get(id=int(folder_id)).folder_name
+            description = f"Moved Folder {folderName}  to folder {destination.folder_name}"
+            Changelog.objects.create(library_version=destination.version_id, change_description=description)
+
             return build_response()
 
         if version_id is not None:
@@ -559,6 +616,9 @@ class LibraryFolderViewSet(StandardDataView, viewsets.ModelViewSet):
             to_move.parent = None
             to_move.save()
             update_child_version(to_move, destination)
+
+            description = f"Moved Folder {to_move.folder_name}  to Folder {destination.folder_name}"
+            Changelog.objects.create(library_version=destination.version_id, change_description=description)
             return build_response()
 
         return build_response(
@@ -594,6 +654,8 @@ class LibraryFolderViewSet(StandardDataView, viewsets.ModelViewSet):
             destination = LibraryFolder.objects.get(id=int(folder_id))
             to_move = LibraryFolder.objects.get(id=pk)
             copy_children_and_update(to_move, destination.version, destination)
+            description = f"Moved content {content.title} (ID: {content.id}) from folder {folder.folder_name} (ID: {folder.id})"
+            Changelog.objects.create(library_version=folder.version, change_description=description)
             return build_response()
 
         if version_id is not None:

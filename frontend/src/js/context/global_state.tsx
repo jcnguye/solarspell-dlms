@@ -378,7 +378,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                     draft.contents_api.selection = []
                 })
             }
-        } catch(err) {
+        } catch(err:any) {
             if (err.data.error.detail === "Invalid page.") {
                 return this.update_state(draft => {
                     draft.contents_api.page = draft.contents_api.page - 1
