@@ -167,15 +167,6 @@ class Changelog(models.Model):
         return f'Changelog for {self.library_version.library_name} {self.library_version.version}'
     
 
-@receiver(models.signals.m2m_changed, sender=LibraryVersion.library_modules.through)
-def library_modules_changed(sender, instance, action, **kwargs):
-    if action in ['post_add', 'post_remove', 'post_clear']:
-       
-        Changelog.objects.create(
-            library_version=instance,
-         
-            change_description=f"Library modules changed. Action: {action}"
-        )
 
 @receiver(models.signals.post_save, sender=LibraryVersion)
 def on_version_save(sender, instance, created, **kwargs):
@@ -219,13 +210,22 @@ class LibraryFolder(models.Model):
     def __str__(self):
         return f'{self.folder_name}'
     
-@receiver(models.signals.m2m_changed, sender=LibraryFolder.library_content.through)
-def library_folder_content_changed(sender, instance, action, **kwargs):
-    if action in ['post_add', 'post_remove', 'post_clear']:
-        Changelog.objects.create(
-            library_version=instance.version,
-            change_description=f"Library folder '{instance.folder_name}' content changed. Action: {action}"
-        )
+@receiver(models.signals.post_save, sender=LibraryFolder)
+def on_folder_create(sender, instance, created, **kwargs):
+    if created:
+        # Create a changelog entry for the creation of the folder
+        description = f"Folder '{instance.folder_name}' created."
+        Changelog.objects.create(library_version=instance.version, change_description=description)
+
+
+@receiver(models.signals.post_delete, sender=LibraryFolder)
+def on_folder_delete(sender, instance, *args, **kwargs):
+        description = f"Folder '{instance.folder_name}' deleted."
+        Changelog.objects.create(library_version=instance.version, change_description=description)
+
+
+
+
 
 
 @receiver(models.signals.post_save, sender=LibraryVersion)
