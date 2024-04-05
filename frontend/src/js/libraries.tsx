@@ -345,7 +345,7 @@ export default class Libraries extends React.Component<
                 style={{
                   marginLeft: "1em",
                   marginBottom: "1em",
-                  backgroundColor: "#75b2dd",
+                  backgroundColor: "#0676d8",
                   color: "#FFFFFF",
                 }}
               >
@@ -518,7 +518,7 @@ export default class Libraries extends React.Component<
                     <Typography
                       style={{
                         fontWeight: "bold",
-                        color: "#75b2dd",
+                        color: "#0676d8",
                         fontSize: "16px",
                       }}
                     >
@@ -589,9 +589,11 @@ export default class Libraries extends React.Component<
                     this.props.library_versions_api.state.path.map(
                       (folder, idx) => (
                         <Box key={idx + 1} flexDirection="row" display="flex">
-                          <Typography>
+                          <Typography  style={{ fontWeight: "bold",
+                              color: "#0676d8"}}>
                             <Link
-                              style={{ cursor: "pointer" }}
+                              style={{ cursor: "pointer" ,fontWeight: "bold",
+                              color: "#0676d8"}}
                               onClick={() => {
                                 this.props.library_versions_api
                                   .enter_folder(
@@ -841,7 +843,7 @@ export default class Libraries extends React.Component<
                   ) : (
                     <>
                       <Typography
-                        style={{ fontWeight: "bold", color: "#75b2dd" }}
+                        style={{ fontWeight: "bold", color: "#0676d8" }}
                       >
                         Library Modules
                       </Typography>
@@ -924,7 +926,7 @@ export default class Libraries extends React.Component<
                     padding: "8px",
                     margin: "10px",
                     backgroundColor: "#fff",
-                    color: "#75b2dd",
+                    color: "#0676d8",
                   }}
                 >
                   <Typography variant="h6">CHANGELOG</Typography>
@@ -932,7 +934,7 @@ export default class Libraries extends React.Component<
                     style={{
                       overflowY: "auto",
                       maxHeight: "200px",
-                      backgroundColor: "#e3e3e3",
+                      backgroundColor: "#252525",
                       padding: "8px",
                       borderRadius: "4px",
                       scrollBehavior: "smooth",
@@ -966,6 +968,7 @@ export default class Libraries extends React.Component<
                                     style={{
                                       fontFamily: "monospace",
                                       marginLeft: "8px",
+                                      color : "#FFC627",
                                     }}
                                   >
                                     {currItem.change_description}
@@ -998,7 +1001,7 @@ export default class Libraries extends React.Component<
               style={{
                 marginLeft: "1em",
                 marginBottom: "1em",
-                backgroundColor: "#75b2dd",
+                backgroundColor: "#0676d8",
                 color: "#FFFFFF",
               }}
             >
@@ -1304,7 +1307,7 @@ export default class Libraries extends React.Component<
                     style={
                       this.state.modals.set_banner.to_set.library_banner ===
                       asset.id
-                        ? { backgroundColor: "#75b2dd" }
+                        ? { backgroundColor: "#0676d8" }
                         : undefined
                     }
                     onClick={(_) => {
@@ -1351,7 +1354,7 @@ export default class Libraries extends React.Component<
                     style={
                       this.state.modals.set_folder_logo.to_change.logo_img ===
                       asset.id
-                        ? { backgroundColor: "#75b2dd" }
+                        ? { backgroundColor: "#0676d8" }
                         : undefined
                     }
                     onClick={(_) => {

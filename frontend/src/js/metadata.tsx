@@ -303,7 +303,7 @@ export default class Metadata extends Component<MetadataProps, MetadataState> {
                     style={{
                         marginLeft: "1em",
                         marginBottom: "1em",
-                        backgroundColor: "#75b2dd",
+                        backgroundColor: "#0676d8",
                         color: "#FFFFFF"
                     }}
                 >New Metadata Type</Button>

@@ -105,7 +105,7 @@ export default class LibraryModules extends React.Component<LibraryModulesProps,
                     style={{
                         marginLeft: "1em",
                         marginBottom: "1em",
-                        backgroundColor: "#75b2dd",
+                        backgroundColor: "#0676d8",
                         color: "#FFFFFF"
                     }}
                 >Add Module</Button>
@@ -176,7 +176,7 @@ export default class LibraryModules extends React.Component<LibraryModulesProps,
                                     key={idx}
                                     item
                                     style={this.state.modals.set_logo_image.to_change.logo_img === asset.id
-                                    ? {backgroundColor: "#75b2dd"} : undefined}
+                                    ? {backgroundColor: "#0676d8"} : undefined}
                                     onClick={_ => {
                                         this.props.library_modules_api.set_module_logo(
                                             this.state.modals.set_logo_image.to_change,
