@@ -8,7 +8,7 @@ import Grid from '@material-ui/core/Grid';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 
-import solarSpellLogo from '../images/logo2.png'; 
+import solarSpellLogo from '../images/Wordmark-Bright-Blue.png'; 
 import '../css/style.css';
 
 import contents from "../images/home_icons/contents.png"
@@ -29,6 +29,7 @@ import Libraries from './libraries';
 import LibraryImages from './library_images';
 import SystemInfo from './system_info';
 import LibraryModules from "./library_modules";
+import { findLastIndex } from 'lodash';
 
 interface MainScreenProps {
     apis: APIs
@@ -216,7 +217,7 @@ class MainScreen extends React.Component<MainScreenProps, MainScreenState> {
 
     render() {
         const tabs_jsx = Object.entries(this.tabs).map(([tab_name, tab_data]) => {
-            return <Tab key={tab_name} value={tab_name} label={(tab_data as any).display_label} />
+            return <Tab key={tab_name} value={tab_name} label={(tab_data as any).display_label}  style={{maxWidth:'350px'}}/>
         })
         
         if (this.state.has_error) {
@@ -228,7 +229,7 @@ class MainScreen extends React.Component<MainScreenProps, MainScreenState> {
                 <Grid container justify="center" alignItems="center" style={{height: '100%'}}>
                     <Tabs
                         value={this.state.current_tab}
-                        TabIndicatorProps={{style: {backgroundColor: '#75B2DD', height: '5px', borderRadius: '5px'}}}
+                        TabIndicatorProps={{style: {backgroundColor: '#FFC627', height: '5px', borderRadius: '5px'}}}
                         onChange={(_, value) => {this.change_tab(value)}}
                         indicatorColor="secondary"
                         variant="scrollable"

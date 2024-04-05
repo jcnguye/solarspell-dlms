@@ -166,7 +166,7 @@ export default class Content extends Component<ContentProps, ContentState> {
                     style={{
                         marginLeft: "1em",
                         marginBottom: "1em",
-                        backgroundColor: "#75b2dd",
+                        backgroundColor: "#0676d8",
                         color: "#FFFFFF"
                     }}
                 >New Content
@@ -178,7 +178,7 @@ export default class Content extends Component<ContentProps, ContentState> {
                     style={{
                         marginLeft: "1em",
                         marginBottom: "1em",
-                        backgroundColor: "#75b2dd",
+                        backgroundColor: "#0676d8",
                         color: "#FFFFFF"
                     }}
                 >Delete Selected
@@ -192,7 +192,7 @@ export default class Content extends Component<ContentProps, ContentState> {
                     style={{
                         marginLeft: "1em",
                         marginBottom: "1em",
-                        backgroundColor: "#75b2dd",
+                        backgroundColor: "#0676d8",
                         color: "#FFFFFF"
                     }}
                 >Add Bulk Content
@@ -202,7 +202,7 @@ export default class Content extends Component<ContentProps, ContentState> {
                     style={{
                         marginLeft: "1em",
                         marginBottom: "1em",
-                        backgroundColor: "#75b2dd",
+                        backgroundColor: "#0676d8",
                         color: "#FFFFFF"
                     }}
                 >
@@ -217,7 +217,7 @@ export default class Content extends Component<ContentProps, ContentState> {
                     style={{
                         marginLeft: "1em",
                         marginBottom: "1em",
-                        backgroundColor: "#75b2dd",
+                        backgroundColor: "#0676d8",
                         color: "#FFFFFF"
                     }}
                 >
@@ -234,7 +234,7 @@ export default class Content extends Component<ContentProps, ContentState> {
                         marginBottom: "1em",
                         float: "right",
                         marginRight: "1em",
-                        //backgroundColor: "#75b2dd",
+                        //backgroundColor: "#0676d8",
                         //color: "#FFFFFF"
                     }}
                     variant="outlined"
