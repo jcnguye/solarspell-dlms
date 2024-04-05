@@ -8,7 +8,7 @@ import Grid from '@material-ui/core/Grid';
 import Tabs from '@material-ui/core/Tabs';
 import Tab from '@material-ui/core/Tab';
 
-import solarSpellLogo from '../images/Wordmark-Bright-Blue.png'; 
+import solarSpellLogo from '../images/DLMS_HOME_ICON.png'; 
 import '../css/style.css';
 
 import contents from "../images/home_icons/contents.png"
