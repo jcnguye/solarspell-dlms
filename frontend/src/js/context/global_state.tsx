@@ -2,9 +2,9 @@ import { Sorting } from '@devexpress/dx-react-grid';
 import Axios from 'axios';
 import { format } from 'date-fns';
 import { APIs, AssetGroup, ContentsProviderState, content_fields, content_filters, LibraryAsset, LibraryAssetsState, LibraryFolder, LibraryVersion, LibraryVersionsState, MetadataProviderState, search_state, SerializedContent, SerializedMetadata, SerializedMetadataType, User, UserProviderState, LibraryModulesState, LibraryModule,
-UtilsState, 
-show_metadata_column,
-metadata_dict} from '../types';
+    UtilsState,
+    show_metadata_column,
+    metadata_dict} from '../types';
 import { APP_URLS, get_data } from '../urls';
 import { update_state } from '../utils';
 import { cloneDeep, get, range } from 'lodash';
@@ -16,6 +16,13 @@ interface GlobalStateProps {
         apis: APIs
     }>
 }
+interface Changelog {
+    id: number;
+    change_date: string;
+    change_description: string;
+    library_version_id: number;
+  }
+  
 interface GlobalStateState {
     contents_api: ContentsProviderState
     metadata_api: MetadataProviderState
@@ -24,8 +31,10 @@ interface GlobalStateState {
     users_api: UserProviderState
     library_modules_api: LibraryModulesState
     utils_api: UtilsState
+     
 }
 
+  
 export default class GlobalState extends React.Component<GlobalStateProps, GlobalStateState> {
     search_defaults: search_state
     update_state: (update_func: (draft: GlobalStateState) => void) => Promise<void>
@@ -98,7 +107,9 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                     version_number: "",
                     library_banner: 0,
                     created_by: 0,
-                    metadata_types: []
+                    metadata_types: [],
+                    changelogs: [],
+
                 },
                 path: [],
                 modules_in_version: [],
@@ -121,7 +132,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         }
 
         this.handle_loader = this.handle_loader.bind(this)
-        
+
         //ContentsAPI
         this.delete_content = this.handle_loader(this.delete_content.bind(this))
         this.load_content_rows = this.handle_loader(this.load_content_rows.bind(this))
@@ -191,8 +202,8 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         this.update_folder_autocomplete = this.update_folder_autocomplete.bind(this)
         this.update_version_autocomplete = this.update_version_autocomplete.bind(this)
         this.build_version = this.handle_loader(this.build_version.bind(this))
+        this.refresh_changelog = this.handle_loader(this.refresh_changelog.bind(this))
 
-        
         //Users API
         this.refresh_users = this.handle_loader(this.refresh_users.bind(this))
         this.add_user = this.handle_loader(this.add_user.bind(this))
@@ -248,6 +259,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         this.refresh_modules_in_current_version()
         this.get_disk_info()
         this.update_version_autocomplete("")
+        this.refresh_changelog()
     }
 
     // CONTENTS ----------------------------------------------------
@@ -265,7 +277,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         return this.update_state(draft => {
             draft.contents_api.selection = selection
         })
-    }   
+    }
 
     //Add the rows indicated by the selection to a given folder
     async add_selected_to_folder(folder: LibraryFolder) {
@@ -281,7 +293,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
     }
 
     get_content_filters(): content_filters {
-        
+
         const search = this.state.contents_api.search
         const active_filter = {
             "all": undefined,
@@ -407,7 +419,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             }
         }).then(this.load_content_rows)
     }
-    
+
     //Update existing content record from content_fields
     async edit_content(fields: content_fields, to_edit: SerializedContent) {
         const form_data = new FormData()
@@ -421,7 +433,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         if (fields.reviewed_on) {
             form_data.append("reviewed_on", format(fields.reviewed_on, "yyyy-MM-dd"))
         }
-        
+
         form_data.append('active', to_edit.active ? "true" : "false")
 
         Object.entries(fields.metadata).map(entry => {
@@ -434,7 +446,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             headers: {
                 'Content-Type': 'multipart/form-data'
             }
-        }).then(this.load_content_rows)
+        }).then(this.load_content_rows) 
     }
 
     //Delete existing content record
@@ -442,7 +454,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         return Axios.delete(APP_URLS.CONTENT_ITEM(to_delete.id))
             .then(this.load_content_rows)
     }
-    
+
     // Delete content items selected
     async delete_selection() {
         return Promise.all(this.state.contents_api.selection
@@ -579,7 +591,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             .then(this.load_content_rows)
             .finally(this.refresh_metadata)
     }
-    
+
     //Add Metadata with MetadataType
     async add_metadata(meta_name: string, meta_type: SerializedMetadataType) {
         const response = await Axios.post(APP_URLS.METADATA, {
@@ -591,7 +603,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             this.refresh_metadata()
         ]).then(_ => response)
     }
-    
+
     //Edit the name of an existing Met
     async edit_metadata(old_meta: SerializedMetadata, new_name: string) {
         return Axios.patch(APP_URLS.METADATA_ITEM(old_meta.id), {
@@ -611,23 +623,23 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         await this.update_state(draft => {
             update_func(draft.metadata_api.show_columns)
         })
-        
+
         const x = Object.keys(this.state.metadata_api.show_columns)
             .filter(name => this.state.metadata_api.show_columns[name])
-        
+
         document.cookie = `show_columns=${x.join(',')}`
     }
 
     async set_metadata_page_size(size: number, type_name: string) {
         return this.update_state(draft => {
-        //     draft.library_versions_api.library_versions_page_size = size
-        // }).then(this.refresh_library_versions)
-        //TODO: make sure this works
+            //     draft.library_versions_api.library_versions_page_size = size
+            // }).then(this.refresh_library_versions)
+            //TODO: make sure this works
             draft.metadata_api.page_by_type[type_name].page_size = size
         })
             .then(this.refresh_metadata)
     }
-    
+
     async set_metadata_page(page: number, type_name: string) {
         return this.update_state(draft => {
             draft.metadata_api.page_by_type[type_name].page = page
@@ -638,9 +650,9 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
     async update_autocomplete(meta_type: SerializedMetadataType, name: string) {
         const data = await get_data(
             APP_URLS.METADATA_BY_TYPE(
-                meta_type.name, 
-                this.state.metadata_api.page_by_type[meta_type.name]?.page || 1, 
-                this.state.metadata_api.page_by_type[meta_type.name]?.page_size || 10, 
+                meta_type.name,
+                this.state.metadata_api.page_by_type[meta_type.name]?.page || 1,
+                this.state.metadata_api.page_by_type[meta_type.name]?.page_size || 10,
                 name
             )
         )
@@ -648,7 +660,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             draft.metadata_api.autocomplete_metadata[meta_type.name] = data.results
         })
     }
-    
+
     // LIBRARY ASSETS -------------------------------------------------------
 
     /**
@@ -656,15 +668,15 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
      */
     async refresh_assets() {
         get_data(APP_URLS.LIBRARY_ASSETS)
-        .then((library_assets: LibraryAsset[]) => {
-            this.update_state(draft => {
-                draft.library_assets_api.assets = library_assets,
-                draft.library_assets_api.assets_by_group = range(1, 4).reduce((acc, group) => {
-                    acc[group as AssetGroup] = library_assets.filter(asset => asset.image_group === group)
-                    return acc
-                }, {} as {[P in AssetGroup]: LibraryAsset[]})
+            .then((library_assets: LibraryAsset[]) => {
+                this.update_state(draft => {
+                    draft.library_assets_api.assets = library_assets,
+                        draft.library_assets_api.assets_by_group = range(1, 4).reduce((acc, group) => {
+                            acc[group as AssetGroup] = library_assets.filter(asset => asset.image_group === group)
+                            return acc
+                        }, {} as {[P in AssetGroup]: LibraryAsset[]})
+                })
             })
-        })
     }
 
     //Create new library_asset from image file and AssetGroup
@@ -690,11 +702,11 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
 
     async delete_library_asset(old_asset: LibraryAsset) {
         return Axios.delete(APP_URLS.LIBRARY_ASSET_ITEM(old_asset.id))
-        .finally(this.refresh_assets)
+            .finally(this.refresh_assets)
     }
 
     //LibraryVersions ---------------------------------------------------------
-    
+
     //Get all folders in the current version and build the list of all folders in the current version
     //Used to construct the paths used in the Libraries move modal
     async refresh_folders_in_current_version() {
@@ -704,7 +716,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                 folder,
                 folder.breadcrumb.map(folder => folder.folder_name).join("/")
             ])
-        })
+        }).finally(this.refresh_changelog)
     }
 
     //Load all library versions
@@ -720,6 +732,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             return this.update_state(draft => {
                 draft.library_versions_api.library_versions = response.results
                 draft.library_versions_api.library_versions_count = response.count
+                
             })
         } catch (err) {
             if (err.data.error.detail === "Invalid page.") {
@@ -743,6 +756,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         })
         await this.refresh_folders_in_current_version()
         await this.refresh_modules_in_current_version()
+        await this.refresh_changelog()
         return this.load_content_rows()
     }
 
@@ -751,6 +765,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         return length > 0 ?
             this._update_current_directory(this.state.library_versions_api.path[length - 1] as LibraryFolder) :
             this.enter_version_root(this.state.library_versions_api.current_version)
+            
     }
 
     async _update_current_directory(folder: LibraryFolder) {
@@ -838,10 +853,24 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
     async delete_version(version: LibraryVersion) {
         return Axios.delete(APP_URLS.LIBRARY_VERSION(version.id))
             .then(this.refresh_library_versions)
+            
     }
 
     async build_version(version: LibraryVersion) {
         return Axios.get(APP_URLS.LIBRARY_BUILD(version.id))
+    }
+
+
+    async refresh_changelog() {
+        const changelogData = await get_data(APP_URLS.LIBRARY_VERSION_CHANGELOGS(this.state.library_versions_api.current_version.id))
+        
+        if(JSON.stringify(changelogData.results) == ""){
+            console.log("NO CHANGE LOG DATA RECIEVED!!!")
+        }
+        return this.update_state(draft => {
+            console.log(changelogData)
+            draft.library_versions_api.current_version.changelogs = changelogData
+        })
     }
 
     async update_version(version: LibraryVersion, name?: string, number?: string, user?: User) {
@@ -877,7 +906,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                 folder_name: name,
                 version: parent.version,
                 parent: parent.id
-            } : 
+            } :
             { //`folder_data` if `parent` is a LibraryVersion
                 folder_name: name,
                 version: parent.id,
@@ -895,7 +924,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             .then(this.refresh_folders_in_current_version)
             .then(this.refresh_modules_in_current_version)
     }
- 
+
     async delete_folder(folder: LibraryFolder) {
         return Axios.delete(APP_URLS.LIBRARY_FOLDER(folder.id))
             .then(this.refresh_current_directory)
@@ -912,7 +941,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
 
     async add_module_to_version(version: LibraryVersion, module_to_add: LibraryModule) {
         return Axios.post(APP_URLS.LIBRARY_VERSION_ADD_MODULE(version.id), {
-                library_module_id: module_to_add.id
+            library_module_id: module_to_add.id
         }).then(this.refresh_modules_in_current_version)
 
     }
@@ -921,8 +950,21 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
         return Axios.post(APP_URLS.LIBRARY_VERSION_REMOVE_MODULE(version.id), {
                 library_module_id: module_to_remove.id
         }).then(this.refresh_modules_in_current_version)
-
+    
     }
+
+    // async remove_module_from_version(version: LibraryVersion, module_to_remove: LibraryModule) {
+    //     const url = APP_URLS.LIBRARY_VERSION_REMOVE_MODULE(version.id);
+
+    //     return Axios({
+    //         method: 'delete',
+    //         url: url,
+    //         data: { library_module_id: module_to_remove.id }, // Include module ID in the request body
+    //         headers: {
+    //             'Content-Type': 'application/json',
+    //         },
+    //     }).then(this.refresh_modules_in_current_version);
+    // }
 
     async refresh_modules_in_current_version() {
         return get_data(APP_URLS.LIBRARY_VERSION_MODULES(this.state.library_versions_api.current_version.id))
@@ -972,7 +1014,8 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                 version_number: "",
                 library_banner: 0,
                 created_by: 0,
-                metadata_types: []
+                metadata_types: [],
+                changelogs: [],
             }
             draft.library_versions_api.path = []
             draft.library_versions_api.modules_in_version = []
@@ -1046,7 +1089,7 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
             }
         }).then(this.refresh_library_modules)
     }
-    
+
     async edit_module(to_edit: LibraryModule, name: string, file?: File | null) {
         const form_data = new FormData()
         form_data.append("module_name", name)
@@ -1145,8 +1188,9 @@ export default class GlobalState extends React.Component<GlobalStateProps, Globa
                     move_folder: this.move_folder,
                     update_version_autocomplete: this.update_version_autocomplete,
                     update_folder_autocomplete: this.update_folder_autocomplete,
-                    build_version: this.build_version
-                },
+                    build_version: this.build_version,
+                    refresh_changelog:this.refresh_changelog,
+            },
                 metadata_api: {
                     state: this.state.metadata_api,
                     add_metadata: this.add_metadata,

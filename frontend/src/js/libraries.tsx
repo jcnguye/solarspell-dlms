@@ -320,14 +320,13 @@ export default class Libraries extends React.Component<
       draft.selected_folders = [];
     });
   }
-  
 
-formatDateTime(dateTimeString: string): string {
-  const dateTime = new Date(dateTimeString);
-  const date = dateTime.toLocaleDateString(); 
-  const time = dateTime.toLocaleTimeString(); 
-  return `${date} ${time}`;
-}
+  formatDateTime(dateTimeString: string): string {
+    const dateTime = new Date(dateTimeString);
+    const date = dateTime.toLocaleDateString(); 
+    const time = dateTime.toLocaleTimeString(); 
+    return `${date} ${time}`;
+  }
 
   
 
@@ -512,6 +511,13 @@ formatDateTime(dateTimeString: string): string {
                     return <></>;
                   }
                 })()}
+              <Paper elevation={3}
+                  style={{
+                    padding: "8px",
+                    margin: "10px",
+                    backgroundColor: "#fff",
+                    color: "#0676d8",
+                  }}>
                 <Box
                   flexDirection="row"
                   display="flex"
@@ -926,8 +932,8 @@ formatDateTime(dateTimeString: string): string {
                     </>
                   )
                 }
-
-                {/*ChangeLog front-end Implementation WORK IN PROGRESS*/}
+                </Paper>
+                {/*ChangeLog front-end Implementation         WORK IN PROGRESS*/}
                 <Paper
                   elevation={3}
                   style={{
@@ -942,7 +948,7 @@ formatDateTime(dateTimeString: string): string {
                     style={{
                       overflowY: "auto",
                       maxHeight: "200px",
-                      backgroundColor: "#252525",
+                      backgroundColor: "#424242",
                       padding: "8px",
                       borderRadius: "4px",
                       scrollBehavior: "smooth",
@@ -958,7 +964,6 @@ formatDateTime(dateTimeString: string): string {
                       {this.props.library_versions_api.state.current_version
                         .changelogs &&  this.props.library_versions_api.state.current_version
                         .changelogs.length > 0 ?(
-                          
                         this.props.library_versions_api.state.current_version.changelogs.map(
                           (currItem, index) => (
                             <ListItem
@@ -970,12 +975,21 @@ formatDateTime(dateTimeString: string): string {
                               }}
                               key={index}
                             >
-                              <ListItemText
-                                primary={
-                                  <span
-                                    style={{
-                                      fontFamily: "monospace",
-                                      marginLeft: "8px",
+                              <Paper
+                                elevation={5}
+                                style={{
+                                  padding: "8px",
+                                  margin: "10px",
+                                  backgroundColor: "#252525",
+                                  color: "#0676d8",
+                                }}
+                              >
+                                <ListItemText
+                                  primary={
+                                    <span
+                                      style={{
+                                        fontFamily: "monospace",
+                                        marginLeft: "8px",
                                       color : "#FFC627",
                                     }}
                                   >
@@ -983,6 +997,7 @@ formatDateTime(dateTimeString: string): string {
                                   </span>
                                 }
                               />
+                              </Paper>
                             </ListItem>
                           )
                         )
@@ -1978,5 +1993,4 @@ formatDateTime(dateTimeString: string): string {
       </>
     );
   }
-  
 }

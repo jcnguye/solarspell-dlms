@@ -7,8 +7,7 @@ from .views import (
     ContentViewSet, MetadataViewSet, MetadataTypeViewSet, UserViewSet,
     LibraryFolderViewSet, LibraryVersionViewSet, LibLayoutImageViewSet,
     LibraryBuildView, metadata_sheet, BulkAddView, get_csrf, bulk_edit,
-    LibraryModuleViewSet, disk_info
-)
+    LibraryModuleViewSet, disk_info, ChangelogViewSet)
 
 router = routers.DefaultRouter()
 router.register(r'contents', ContentViewSet)
@@ -19,6 +18,7 @@ router.register(r'library_versions', LibraryVersionViewSet)
 router.register(r'library_folders', LibraryFolderViewSet)
 router.register(r'users', UserViewSet)
 router.register(r'library_modules', LibraryModuleViewSet)
+router.register(r'changelogs', ChangelogViewSet)
 
 
 urlpatterns = [
@@ -30,4 +30,4 @@ urlpatterns = [
     path('api/disk_info/', disk_info),
     path('api/get_csrf/', get_csrf),
     path('api/bulk_edit/', bulk_edit),
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

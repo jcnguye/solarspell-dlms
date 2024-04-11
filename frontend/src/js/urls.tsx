@@ -96,7 +96,7 @@ const APP_URLS = {
     LIBRARY_VERSION_remove_METADATA: (id: number) =>
         url_with_params(`${api_path}/library_versions/${id}/remove_metadata_type/`),
     LIBRARY_VERSION_REMOVE_MODULE: (id: number) =>
-        url_with_params(`${api_path}/library_versions/${id}/remove/`),
+        url_with_params(`${api_path}/library_versions/${id}/removemodule/`),
     LIBRARY_VERSION_PREFIX: (prefix: string) => url_with_params(
         `${api_path}/library_versions/filter_prefix/`, [["prefix", prefix]]
     ),
@@ -124,6 +124,8 @@ const APP_URLS = {
     USERS: url_with_params(`${api_path}/users/`),
     LIBRARY_MODULE: (id: number) => url_with_params(`${api_path}/library_modules/${id}/`),
     LIBRARY_MODULES: url_with_params(`${api_path}/library_modules/`),
+    LIBRARY_VERSION_CHANGELOGS: (versionId: number) =>
+        url_with_params(`${api_path}/changelogs/${versionId}/`),
     
 }
 
