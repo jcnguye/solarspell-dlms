@@ -321,6 +321,13 @@ export default class Libraries extends React.Component<
     });
   }
 
+  formatDateTime(dateTimeString: string): string {
+    const dateTime = new Date(dateTimeString);
+    const date = dateTime.toLocaleDateString(); 
+    const time = dateTime.toLocaleTimeString(); 
+    return `${date} ${time}`;
+  }
+
   
 
   render() {
@@ -986,7 +993,7 @@ export default class Libraries extends React.Component<
                                       color : "#FFC627",
                                     }}
                                   >
-                                    {currItem.change_description}
+                                    {currItem.change_description} {this.formatDateTime(currItem.change_date)}
                                   </span>
                                 }
                               />
