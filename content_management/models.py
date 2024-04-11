@@ -158,6 +158,15 @@ class LibraryVersion(models.Model):
     def __str__(self):
         return f'[{self.library_name}]{self.version_number}'
 
+class Changelog(models.Model):
+    library_version = models.ForeignKey('LibraryVersion', related_name='changelogs', on_delete=models.CASCADE)
+    change_date = models.DateTimeField(auto_now_add=True)
+    change_description = models.TextField()
+
+    def __str__(self):
+        return f'Changelog for {self.library_version.library_name} {self.library_version.version}'
+    
+
 
 @receiver(models.signals.post_save, sender=LibraryVersion)
 def on_version_save(sender, instance, created, **kwargs):
@@ -165,6 +174,14 @@ def on_version_save(sender, instance, created, **kwargs):
     if created:
         for metadata_type in MetadataType.objects.all():
             instance.metadata_types.add(metadata_type)
+
+    # Adds initial changelog log entry for start of library version
+    if created and not Changelog.objects.filter(library_version=instance).exists():
+        Changelog.objects.create(
+            library_version=instance,
+            change_description=f"Initial version {instance.version_number} created."
+        )
+
 
 
 class LibraryFolder(models.Model):
@@ -192,6 +209,24 @@ class LibraryFolder(models.Model):
 
     def __str__(self):
         return f'{self.folder_name}'
+    
+@receiver(models.signals.post_save, sender=LibraryFolder)
+def on_folder_create(sender, instance, created, **kwargs):
+    if created:
+        # Create a changelog entry for the creation of the folder
+        description = f"Folder {instance.folder_name} created."
+        Changelog.objects.create(library_version=instance.version, change_description=description)
+
+
+@receiver(models.signals.post_delete, sender=LibraryFolder)
+def on_folder_delete(sender, instance, *args, **kwargs):
+        description = f"Folder {instance.folder_name} deleted."
+        Changelog.objects.create(library_version=instance.version, change_description=description)
+
+
+
+
+
 
 @receiver(models.signals.post_save, sender=LibraryVersion)
 def on_folder_save(sender, instance, *args, **kwargs):
