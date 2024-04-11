@@ -57,9 +57,9 @@ class ContentSheetUtil:
                            
                             if each_content.get("Reviewed On"):
                                 try:
-                                    content.reviewed_on = datetime.datetime.strptime(each_content.get("Reviewed On"), "%m/%d/%Y, %H:%M:%S")
+                                    content.reviewed_on = datetime.datetime.strptime(each_content.get("Reviewed On"), "%m/%d/%Y, %H:%M:%S").date()
                                 except ValueError:
-                                    content.reviewed_on = datetime.datetime.now()
+                                    content.reviewed_on = datetime.datetime.now().date()
                             else:
                                 content.reviewed_on = datetime.datetime.now().date()
                             content.rights_statement = each_content.get("Rights Statement")
@@ -148,7 +148,7 @@ class ContentSheetUtil:
                                 try:
                                     content.reviewed_on = datetime.datetime.strptime(each_content.get("Reviewed On"), "%m/%d/%Y, %H:%M:%S").date()
                                 except ValueError:
-                                    content.reviewed_on = datetime.datetime.now()
+                                    content.reviewed_on = datetime.datetime.now().date()
                             else:
                                 content.reviewed_on = datetime.datetime.now().date()
                             content.rights_statement = each_content.get("Rights Statement") 
