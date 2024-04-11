@@ -504,6 +504,13 @@ export default class Libraries extends React.Component<
                     return <></>;
                   }
                 })()}
+              <Paper elevation={3}
+                  style={{
+                    padding: "8px",
+                    margin: "10px",
+                    backgroundColor: "#fff",
+                    color: "#0676d8",
+                  }}>
                 <Box
                   flexDirection="row"
                   display="flex"
@@ -918,7 +925,7 @@ export default class Libraries extends React.Component<
                     </>
                   )
                 }
-
+                </Paper>
                 {/*ChangeLog front-end Implementation         WORK IN PROGRESS*/}
                 <Paper
                   elevation={3}
@@ -934,7 +941,7 @@ export default class Libraries extends React.Component<
                     style={{
                       overflowY: "auto",
                       maxHeight: "200px",
-                      backgroundColor: "#252525",
+                      backgroundColor: "#424242",
                       padding: "8px",
                       borderRadius: "4px",
                       scrollBehavior: "smooth",
@@ -950,7 +957,6 @@ export default class Libraries extends React.Component<
                       {this.props.library_versions_api.state.current_version
                         .changelogs &&  this.props.library_versions_api.state.current_version
                         .changelogs.length > 0 ?(
-                          
                         this.props.library_versions_api.state.current_version.changelogs.map(
                           (currItem, index) => (
                             <ListItem
@@ -962,12 +968,21 @@ export default class Libraries extends React.Component<
                               }}
                               key={index}
                             >
-                              <ListItemText
-                                primary={
-                                  <span
-                                    style={{
-                                      fontFamily: "monospace",
-                                      marginLeft: "8px",
+                              <Paper
+                                elevation={5}
+                                style={{
+                                  padding: "8px",
+                                  margin: "10px",
+                                  backgroundColor: "#252525",
+                                  color: "#0676d8",
+                                }}
+                              >
+                                <ListItemText
+                                  primary={
+                                    <span
+                                      style={{
+                                        fontFamily: "monospace",
+                                        marginLeft: "8px",
                                       color : "#FFC627",
                                     }}
                                   >
@@ -975,6 +990,7 @@ export default class Libraries extends React.Component<
                                   </span>
                                 }
                               />
+                              </Paper>
                             </ListItem>
                           )
                         )

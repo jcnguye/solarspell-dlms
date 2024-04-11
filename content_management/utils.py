@@ -54,12 +54,24 @@ class ContentSheetUtil:
                                 content.display_title = each_content.get("Title")
                             content.description = each_content.get("Description")
                             content.copyright_notes = each_content.get("Copyright Notes")
-                            content.reviewed_on = datetime.datetime.now()
-                            content.rights_statement = each_content.get("Rights Statement")
-                            if each_content.get("Year Published"):
+                           
+                            if each_content.get("Reviewed On"):
                                 try:
-                                    content.published_date = datetime.date(each_content.get("Year Published"), 1, 1)
+                                    content.reviewed_on = datetime.datetime.strptime(each_content.get("Reviewed On"), "%m/%d/%Y, %H:%M:%S")
                                 except ValueError:
+                                    content.reviewed_on = datetime.datetime.now()
+                            else:
+                                content.reviewed_on = datetime.datetime.now().date()
+                            content.rights_statement = each_content.get("Rights Statement")
+                            if each_content.get("Year Published"):  
+                                try:
+                                    if each_content.get("Year Published") == "None":
+                                        content.published_date = None
+                                    else:         
+                                        content.published_date = datetime.datetime.strptime(each_content.get("Year Published"), "%m/%d/%Y, %H:%M:%S").date()
+                                except ValueError:
+                                    content.published_date = None
+                                except ValidationError:
                                     content.published_date = None
                             content.modified_on = timezone.now()
                             content.additional_notes = each_content.get("Additional Notes")
@@ -132,16 +144,26 @@ class ContentSheetUtil:
                             else:
                                 content.display_title = each_content.get("Title")
                             content.copyright_notes = each_content.get("Copyright Notes")
-                            content.reviewed_on = datetime.datetime.now()
-                            content.rights_statement = each_content.get("Rights Statement")
-                            if each_content.get("Year Published"):
+                            if each_content.get("Reviewed On"):
                                 try:
-                                    content.published_date = datetime.date(each_content.get("Year Published"), 1, 1)
+                                    content.reviewed_on = datetime.datetime.strptime(each_content.get("Reviewed On"), "%m/%d/%Y, %H:%M:%S").date()
                                 except ValueError:
+                                    content.reviewed_on = datetime.datetime.now()
+                            else:
+                                content.reviewed_on = datetime.datetime.now().date()
+                            content.rights_statement = each_content.get("Rights Statement") 
+                            if each_content.get("Year Published"):  
+                                try:
+                                    if each_content.get("Year Published") == "None":
+                                        content.published_date = None
+                                    else:         
+                                        content.published_date = datetime.datetime.strptime(each_content.get("Year Published"), "%m/%d/%Y, %H:%M:%S").date()
+                                except ValueError:
+                                    content.published_date = None
+                                except ValidationError:
                                     content.published_date = None
                             content.modified_on = timezone.now()
                             content.additional_notes = each_content.get("Additional Notes")
-
                             active = each_content.get("Active")
                             if active:
                                 if type(active) == bool:
