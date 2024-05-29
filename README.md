@@ -10,15 +10,11 @@ Before installation of the DLMS, make sure that Python 3.8+ and Node >= 10, <= 1
 
 Create a python venv 
 To install python dependencies, run this command in the base directory.
-
-```bash
-pip install -r requirements.txt
-```
-
-## Troubleshooting
-
 #### psycopg2
-For errors encountered installing psycopg2: link[https://stackoverflow.com/questions/5420789/how-to-install-psycopg2-with-pip-on-python] 
+Install psycopg2
+```bash
+pip install psycopg2-binary
+```
 
 #### Pillow
 For errors encountered installing Pillow: link[https://pillow.readthedocs.io/en/latest/installation.html]
@@ -26,6 +22,15 @@ It seems like the version of Pillow listed in the requirements.txt is too old fo
 Pillow might also be completely unused? This needs to be tested though.
 
 djangorestframework needs to be updated?
+Install pillow 
+```bash
+python -m pip install Pillow 
+```
+
+#### After pillow and psycopg2
+```bash
+pip install -r requirements.txt
+```
 
 ### Database
 
@@ -41,13 +46,38 @@ ALTER USER username WITH PASSWORD 'password'
 
 Duplicate `env.example` from the /dlms directory, change the appropriate values, and rename it `.env`. This step must be done before the following steps will work.
 
+Inside env file specify 
+DATABASE_URL=postgres://username:password@hostname:port/database
+### Python virutal envirorment 
+
+Before running python commands make a virutal envirorment folder to run your server, have python installed
+```bash
+python -m venv <EnvirormentName>
+```
+
+Activate to enter in envirorment
+Navigate to venv\Scripts
+```bash
+python acitvate
+```
+Should look like this when activated 
+(venv) D:\SollarSpell\solarspell-dlms\venv\Scripts>
+
 ### DB Migration
 
-To initialize the database with the proper schema, you must run the folliwng command in the base directory.
+To initialize the database with the proper schema, you must run the fallow command in the base directory.
 
 ```bash
 python manage.py migrate
 ```
+
+### Load in data 
+
+In psql tool 
+
+Include single quotes 
+
+\i 'path to sql file' 
 
 ### Starting the Server
 
@@ -57,7 +87,7 @@ To start the server, you must run the following command in the base directory.
 python manage.py runserver
 ```
 
-navigate to localhost:8000/static/index.html
+
 
 ### Frontend
 
@@ -90,3 +120,6 @@ npm run-script build-bash
 ```
 npm run-script winbuild
 ```
+### 
+After building front end 
+navigate to localhost:8000/static/index.html
