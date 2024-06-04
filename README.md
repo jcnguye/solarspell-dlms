@@ -31,6 +31,8 @@ python -m pip install Pillow
 ```bash
 pip install -r requirements.txt
 ```
+Inside env file specify 
+DATABASE_URL=postgres://username:password@hostname:port/database
 
 ### Database
 
@@ -46,8 +48,6 @@ ALTER USER username WITH PASSWORD 'password'
 
 Duplicate `env.example` from the /dlms directory, change the appropriate values, and rename it `.env`. This step must be done before the following steps will work.
 
-Inside env file specify 
-DATABASE_URL=postgres://username:password@hostname:port/database
 ### Python virutal envirorment 
 
 Before running python commands make a virutal envirorment folder to run your server, have python installed
@@ -65,7 +65,7 @@ Should look like this when activated
 
 ### DB Migration
 
-To initialize the database with the proper schema, you must run the fallow command in the base directory.
+To initialize the database with the proper schema, you must run the following command in the base directory.
 
 ```bash
 python manage.py migrate
@@ -122,4 +122,5 @@ npm run-script winbuild
 ```
 ### 
 After building front end 
+
 navigate to localhost:8000/static/index.html
