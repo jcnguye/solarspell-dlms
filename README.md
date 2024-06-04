@@ -6,9 +6,30 @@ This is the latest repository for the DLMS, which is one tool used to create the
 
 Before installation of the DLMS, make sure that Python 3.8+ and Node >= 10, <= 16 are installed.
 
+Create a python venv 
+
+### Env File
+
+Duplicate `env.example` from the /dlms directory, change the appropriate values, and rename it `.env`. This step must be done before the following steps will work.
+
+### Python virutal envirorment 
+```bash
+python -m venv <EnvirormentName>
+```
+
+Activate to enter in envirorment
+Navigate to venv\Scripts
+```bash
+python acitvate
+```
+Should look like this when activated 
+(venv) D:\SollarSpell\solarspell-dlms\venv\Scripts>
+
 ### Python Dependencies
 
-Create a python venv 
+
+
+
 To install python dependencies, run this command in the base directory.
 #### psycopg2
 Install psycopg2
@@ -44,25 +65,6 @@ sudo -u postgres psql
 ALTER USER username WITH PASSWORD 'password'
 ```
 
-### Env File
-
-Duplicate `env.example` from the /dlms directory, change the appropriate values, and rename it `.env`. This step must be done before the following steps will work.
-
-### Python virutal envirorment 
-
-Before running python commands make a virutal envirorment folder to run your server, have python installed
-```bash
-python -m venv <EnvirormentName>
-```
-
-Activate to enter in envirorment
-Navigate to venv\Scripts
-```bash
-python acitvate
-```
-Should look like this when activated 
-(venv) D:\SollarSpell\solarspell-dlms\venv\Scripts>
-
 ### DB Migration
 
 To initialize the database with the proper schema, you must run the following command in the base directory.
@@ -87,7 +89,7 @@ To start the server, you must run the following command in the base directory.
 python manage.py runserver
 ```
 
-
+navigate to localhost:8000/static/index.html
 
 ### Frontend
 
@@ -122,5 +124,3 @@ npm run-script winbuild
 ```
 ### 
 After building front end 
-
-navigate to localhost:8000/static/index.html
